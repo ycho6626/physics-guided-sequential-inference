@@ -62,12 +62,46 @@ Explicitly unsupported (recorded deterministically in ablation outputs):
 - Regime histogram vs KDE mode swaps not fully equivalent to upstream production path.
 - Policy confirmable-set changes requiring upstream semantic changes.
 
+## Primary experiment path: split before fit
+
+`run_corrected_experiment.py` creates the outer sequence split before any learned stage runs. It
+fits Modules 03-05 on outer-train data and evaluates validation/test rows through each module's
+frozen-apply interface. Module 06 remains a deterministic per-split application. Fit artifacts are
+tested for invariance to held-out row removal, held-out label changes, and held-out value changes.
+
+The historical `run_experiment.py` path fits before splitting. It is retained only to reproduce old
+artifacts and requires the explicit `--allow-leaky-historical` flag. New evaluations must use the
+corrected path.
+
+Corrected records disclose both `code_revision` and `working_tree_dirty`, and use paths relative to
+the run/grid root. Results produced from a dirty tree remain exploratory rather than citation-grade.
+
 ## Commands
-Full experiment:
+Primary experiment:
+```bash
+python experiments/scripts/run_corrected_experiment.py \
+  --config experiments/configs/nominal.yaml \
+  --out /tmp/exp_corrected_nominal
+```
+
+Corrected baselines and ablations:
+```bash
+python experiments/scripts/run_corrected_baselines.py \
+  --config experiments/configs/baselines.yaml \
+  --corrected-run-dir /tmp/exp_corrected_nominal \
+  --out /tmp/exp_corrected_baselines
+
+python experiments/scripts/run_corrected_ablations.py \
+  --config experiments/configs/nominal.yaml \
+  --out /tmp/exp_corrected_ablation_grid
+```
+
+Historical/leaky reproduction only:
 ```bash
 python experiments/scripts/run_experiment.py \
   --config experiments/configs/nominal.yaml \
-  --out /tmp/exp_nominal
+  --out /tmp/exp_historical_nominal \
+  --allow-leaky-historical
 ```
 
 Baselines:
@@ -208,18 +242,22 @@ Bundle builder output:
 - Outputs include ROC AUC, average precision, class counts, threshold-free separation summaries, configured gate decisions, and a conclusion.
 - If no validation probe passes gates, the audit reports that Module 03/04 separability is insufficient for honest publication claims.
 
-## Recommended workflows
-Smoke/CI contract check:
+## Historical bundle workflows
+
+The existing bundle builder consumes the historical run schema. These commands intentionally
+reproduce that schema and are not the primary architecture-evaluation path.
+
+Historical smoke/CI contract check:
 ```bash
-python experiments/scripts/run_experiment.py --config experiments/configs/nominal.yaml --out /tmp/exp_nominal
+python experiments/scripts/run_experiment.py --config experiments/configs/nominal.yaml --out /tmp/exp_nominal --allow-leaky-historical
 python experiments/scripts/run_baselines.py --config experiments/configs/baselines.yaml --out /tmp/exp_baselines --evaluation-split test
 python experiments/scripts/run_ablations.py --config experiments/configs/ablations.yaml --out /tmp/exp_ablations
 python experiments/scripts/build_results_bundle.py --run-dir /tmp/exp_nominal --baselines-dir /tmp/exp_baselines --ablations-dir /tmp/exp_ablations --out /tmp/results_bundle
 ```
 
-Paper-candidate validation:
+Historical paper-candidate bundle reproduction:
 ```bash
-python experiments/scripts/run_experiment.py --config experiments/configs/paper_candidate.yaml --out /tmp/exp_paper_candidate
+python experiments/scripts/run_experiment.py --config experiments/configs/paper_candidate.yaml --out /tmp/exp_paper_candidate --allow-leaky-historical
 python experiments/scripts/run_baselines.py --config experiments/configs/baselines_paper_candidate.yaml --out /tmp/exp_baselines_paper_candidate --evaluation-split test
 python experiments/scripts/run_ablations.py --config experiments/configs/ablations_paper_candidate.yaml --out /tmp/exp_ablations_paper_candidate
 python experiments/scripts/diagnose_paper_candidate.py --run-dir /tmp/exp_paper_candidate --baselines-dir /tmp/exp_baselines_paper_candidate --out /tmp/diagnostics_paper_candidate

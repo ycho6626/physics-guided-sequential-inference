@@ -70,6 +70,27 @@ def _write_small_experiment_cfg(path: Path, base_cfg_path: Path) -> Path:
     return path
 
 
+def test_historical_runner_requires_explicit_leaky_opt_in(repo_root: Path, tmp_path: Path) -> None:
+    out_dir = tmp_path / "must_not_run"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "experiments/scripts/run_experiment.py",
+            "--config",
+            "experiments/configs/nominal.yaml",
+            "--out",
+            str(out_dir),
+        ],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 2
+    assert "historical/leaky reproduction path" in completed.stderr
+    assert not out_dir.exists()
+
+
 def test_full_experiment_baselines_ablations_bundle(repo_root: Path, tmp_path: Path):
     exp_cfg = _write_small_experiment_cfg(
         tmp_path / "exp.yaml",
@@ -118,8 +139,8 @@ def test_full_experiment_baselines_ablations_bundle(repo_root: Path, tmp_path: P
     bundle_out_2 = tmp_path / "bundle2"
     bundle_out_3 = tmp_path / "bundle3"
 
-    _run([sys.executable, "experiments/scripts/run_experiment.py", "--config", str(exp_cfg), "--out", str(exp_out_1)], cwd=repo_root)
-    _run([sys.executable, "experiments/scripts/run_experiment.py", "--config", str(exp_cfg), "--out", str(exp_out_2)], cwd=repo_root)
+    _run([sys.executable, "experiments/scripts/run_experiment.py", "--config", str(exp_cfg), "--out", str(exp_out_1), "--allow-leaky-historical"], cwd=repo_root)
+    _run([sys.executable, "experiments/scripts/run_experiment.py", "--config", str(exp_cfg), "--out", str(exp_out_2), "--allow-leaky-historical"], cwd=repo_root)
 
     _run([sys.executable, "experiments/scripts/run_baselines.py", "--config", str(base_cfg_path), "--out", str(baselines_out)], cwd=repo_root)
     _run([sys.executable, "experiments/scripts/run_ablations.py", "--config", str(abl_cfg_path), "--out", str(ablations_out)], cwd=repo_root)
@@ -282,7 +303,7 @@ def test_bundle_source_hashes_emit_null_without_baseline_or_ablation(repo_root: 
     )
     exp_out = tmp_path / "exp_only"
     bundle_out = tmp_path / "bundle_only"
-    _run([sys.executable, "experiments/scripts/run_experiment.py", "--config", str(exp_cfg), "--out", str(exp_out)], cwd=repo_root)
+    _run([sys.executable, "experiments/scripts/run_experiment.py", "--config", str(exp_cfg), "--out", str(exp_out), "--allow-leaky-historical"], cwd=repo_root)
     _run([sys.executable, "experiments/scripts/build_results_bundle.py", "--run-dir", str(exp_out), "--out", str(bundle_out)], cwd=repo_root)
 
     run_name = _strict_json(exp_out / "metrics.json")["run_name"]
@@ -309,7 +330,7 @@ def test_slow_larger_experiment_regression(repo_root: Path, tmp_path: Path):
     cfg_path.write_text(yaml.safe_dump(cfg, sort_keys=True), encoding="utf-8")
 
     out = tmp_path / "slow_out"
-    _run([sys.executable, "experiments/scripts/run_experiment.py", "--config", str(cfg_path), "--out", str(out)], cwd=repo_root)
+    _run([sys.executable, "experiments/scripts/run_experiment.py", "--config", str(cfg_path), "--out", str(out), "--allow-leaky-historical"], cwd=repo_root)
 
     assert (out / "run_manifest.json").exists()
     assert (out / "metrics.json").exists()

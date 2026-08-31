@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the full deterministic experiment pipeline."""
+"""Run the historical fit-before-split experiment for explicit reproduction only."""
 
 from __future__ import annotations
 
@@ -17,10 +17,21 @@ from experiment_runner.pipeline import run_experiment
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run full experiment")
+    parser = argparse.ArgumentParser(description="Run historical/leaky fit-before-split reproduction")
     parser.add_argument("--config", required=True, type=Path)
     parser.add_argument("--out", required=True, type=Path)
+    parser.add_argument(
+        "--allow-leaky-historical",
+        action="store_true",
+        help="Explicitly acknowledge that this historical runner fits before the outer split.",
+    )
     args = parser.parse_args()
+
+    if not args.allow_leaky_historical:
+        parser.error(
+            "run_experiment.py is a historical/leaky reproduction path; "
+            "use run_corrected_experiment.py for new work or pass --allow-leaky-historical explicitly"
+        )
 
     run_experiment(config_path=args.config, out_dir=args.out)
     return 0

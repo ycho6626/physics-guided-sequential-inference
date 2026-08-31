@@ -71,3 +71,10 @@ When floating point is involved:
   - artifacts
   - figures
   - report draft
+
+## Corrected fit/apply experiment records
+
+Corrected architecture-run manifests and ablation-grid indexes include top-level `code_revision`
+and `working_tree_dirty` fields. A revision does not identify uncommitted code, so
+`working_tree_dirty: true` marks the record as exploratory. Artifact references inside corrected
+run, grid, and cell records are relative to the run or grid root so copied bundles remain portable.

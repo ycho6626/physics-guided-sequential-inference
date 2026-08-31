@@ -47,6 +47,17 @@ def detect_git_revision(repo_root: Path) -> str:
         return "unknown"
 
 
+def detect_working_tree_dirty(repo_root: Path) -> bool:
+    """Return whether tracked or untracked working-tree changes are present."""
+    completed = subprocess.run(
+        ["git", "-C", str(repo_root), "status", "--porcelain", "--untracked-files=normal"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return bool(completed.stdout.strip())
+
+
 def write_run_manifest(
     *,
     out_path: Path,
