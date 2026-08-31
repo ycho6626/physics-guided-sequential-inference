@@ -1,0 +1,326 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "simulator.schema.json",
+  "title": "Simulator Config",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "output",
+    "wavelength_grid",
+    "seed",
+    "sampling",
+    "agents",
+    "mixtures",
+    "latents",
+    "illumination",
+    "baseline",
+    "sensor_response",
+    "noise",
+    "scenarios",
+    "labeling"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "sim.v1"
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "include_clean", "include_latents"],
+      "properties": {
+        "format": {
+          "type": "string",
+          "enum": ["parquet", "npz"],
+          "default": "parquet"
+        },
+        "include_clean": {
+          "type": "boolean",
+          "default": true
+        },
+        "include_latents": {
+          "type": "boolean",
+          "default": true
+        },
+        "compression": {
+          "type": "string",
+          "enum": ["zstd", "snappy", "gzip", "brotli", "none"],
+          "default": "zstd"
+        }
+      }
+    },
+    "wavelength_grid": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start_nm", "stop_nm", "step_nm"],
+      "properties": {
+        "start_nm": {"type": "number"},
+        "stop_nm": {"type": "number"},
+        "step_nm": {"type": "number", "exclusiveMinimum": 0}
+      }
+    },
+    "seed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["base"],
+      "properties": {
+        "base": {"type": "integer", "minimum": 0}
+      }
+    },
+    "sampling": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["n_samples", "mode", "n_sequences", "sequence_length", "dt_seconds"],
+      "properties": {
+        "n_samples": {"type": "integer", "minimum": 1},
+        "mode": {"type": "string", "enum": ["iid", "sequence"]},
+        "n_sequences": {"type": "integer", "minimum": 1},
+        "sequence_length": {"type": "integer", "minimum": 1},
+        "dt_seconds": {"type": "number", "exclusiveMinimum": 0}
+      }
+    },
+    "agents": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hazard_agents", "benign_agents", "library"],
+      "properties": {
+        "hazard_agents": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string"}
+        },
+        "benign_agents": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string"}
+        },
+        "library": {
+          "type": "object",
+          "minProperties": 1,
+          "patternProperties": {
+            "^[A-Za-z0-9_]+$": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["absorption_profile"],
+              "properties": {
+                "absorption_profile": {
+                  "type": "string",
+                  "enum": ["builtin:gaussian_peaks", "builtin:no_absorption"]
+                },
+                "peaks": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["center_nm", "width_nm", "strength"],
+                    "properties": {
+                      "center_nm": {"type": "number"},
+                      "width_nm": {"type": "number", "exclusiveMinimum": 0},
+                      "strength": {"type": "number", "minimum": 0}
+                    }
+                  },
+                  "default": []
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "mixtures": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "max_components", "weight_prior", "dirichlet_alpha"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "max_components": {"type": "integer", "minimum": 1},
+        "weight_prior": {"type": "string", "enum": ["dirichlet"]},
+        "dirichlet_alpha": {"type": "number", "exclusiveMinimum": 0}
+      }
+    },
+    "latents": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["concentration", "path_length", "humidity", "distance_m", "angle_deg"],
+      "properties": {
+        "concentration": {
+          "$ref": "#/$defs/range_prior"
+        },
+        "path_length": {
+          "$ref": "#/$defs/range_prior"
+        },
+        "humidity": {
+          "$ref": "#/$defs/range_prior"
+        },
+        "distance_m": {
+          "$ref": "#/$defs/range_prior"
+        },
+        "angle_deg": {
+          "$ref": "#/$defs/range_prior"
+        }
+      }
+    },
+    "illumination": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model", "blackbody"],
+      "properties": {
+        "model": {
+          "type": "string",
+          "enum": ["blackbody", "piecewise_linear", "fixed"]
+        },
+        "blackbody": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["temp_K"],
+          "properties": {
+            "temp_K": {
+              "$ref": "#/$defs/range_prior"
+            }
+          }
+        }
+      }
+    },
+    "baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "model", "poly2"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "model": {"type": "string", "enum": ["poly2"]},
+        "poly2": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["b0", "b1", "b2"],
+          "properties": {
+            "b0": {"$ref": "#/$defs/normal_prior"},
+            "b1": {"$ref": "#/$defs/normal_prior"},
+            "b2": {"$ref": "#/$defs/normal_prior"}
+          }
+        }
+      }
+    },
+    "sensor_response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "model", "smooth_random"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "model": {"type": "string", "enum": ["smooth_random"]},
+        "smooth_random": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["knots", "amplitude"],
+          "properties": {
+            "knots": {"type": "integer", "minimum": 2},
+            "amplitude": {"type": "number", "minimum": 0}
+          }
+        }
+      }
+    },
+    "noise": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gaussian", "shot", "clipping"],
+      "properties": {
+        "gaussian": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "sigma"],
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "sigma": {"$ref": "#/$defs/range_prior"}
+          }
+        },
+        "shot": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "alpha"],
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "alpha": {"$ref": "#/$defs/range_prior"}
+          }
+        },
+        "clipping": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "y_min", "y_max"],
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "y_min": {"type": "number"},
+            "y_max": {"type": "number"}
+          }
+        }
+      }
+    },
+    "scenarios": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["flicker"],
+      "properties": {
+        "flicker": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "prob", "duration_steps", "baseline_spike_std"],
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "prob": {"type": "number", "minimum": 0, "maximum": 1},
+            "duration_steps": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["min", "max"],
+              "properties": {
+                "min": {"type": "integer", "minimum": 1},
+                "max": {"type": "integer", "minimum": 1}
+              }
+            },
+            "baseline_spike_std": {"type": "number", "minimum": 0}
+          }
+        }
+      }
+    },
+    "labeling": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "hazard_label", "benign_label"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "const": "binary"
+        },
+        "hazard_label": {"type": "string", "const": "hazard"},
+        "benign_label": {"type": "string", "const": "benign"}
+      }
+    }
+  },
+  "$defs": {
+    "range_prior": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prior", "min", "max"],
+      "properties": {
+        "prior": {
+          "type": "string",
+          "enum": ["uniform", "loguniform"]
+        },
+        "min": {"type": "number"},
+        "max": {"type": "number"}
+      }
+    },
+    "normal_prior": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prior", "mean", "std"],
+      "properties": {
+        "prior": {
+          "type": "string",
+          "const": "normal"
+        },
+        "mean": {"type": "number"},
+        "std": {"type": "number", "minimum": 0}
+      }
+    }
+  }
+}

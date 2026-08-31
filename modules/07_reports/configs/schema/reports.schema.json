@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "llm",
+    "templates",
+    "validation",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "report.v1"
+    },
+    "llm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "model", "temperature", "max_tokens"],
+      "properties": {
+        "provider": {"type": "string", "minLength": 1},
+        "model": {"type": "string", "minLength": 1},
+        "temperature": {"type": "number", "minimum": 0, "maximum": 2},
+        "max_tokens": {"type": "integer", "minimum": 1}
+      }
+    },
+    "templates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operator", "commander"],
+      "properties": {
+        "operator": {"type": "string", "minLength": 1},
+        "commander": {"type": "string", "minLength": 1}
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["forbid_phrases", "require_fields"],
+      "properties": {
+        "forbid_phrases": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "require_fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["formats", "include_hashes"],
+      "properties": {
+        "formats": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "enum": ["md", "json"]}
+        },
+        "include_hashes": {"type": "boolean"}
+      }
+    }
+  }
+}

@@ -1,0 +1,35 @@
+# Configuration (Reports) — `configs/reports.yaml`
+
+```yaml
+schema_version: "report.v1"
+
+llm:
+  provider: "openai"
+  model: "gpt-5-mini"
+  temperature: 0.0
+  max_tokens: 800
+
+templates:
+  operator: "templates/operator_v1.md"
+  commander: "templates/commander_v1.md"
+
+validation:
+  forbid_phrases:
+    - "likely"
+    - "probably"
+    - "we believe"
+    - "AI estimates"
+  require_fields:
+    - action
+    - persistence_seconds
+    - stability_grade
+
+outputs:
+  formats: ["md", "json"]
+  include_hashes: true
+```
+
+## Notes
+- The `llm` section is retained for forward compatibility.
+- Delivered default path is deterministic template rendering (no network calls).
+- Template paths must exist and are validated fail-closed.

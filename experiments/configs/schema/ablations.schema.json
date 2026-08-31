@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "run_name", "experiment_config", "variants", "evaluation"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "ablations.v1"},
+    "run_name": {"type": "string", "minLength": 1},
+    "experiment_config": {"type": "string", "minLength": 1},
+    "variants": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "description", "module_patches", "expect_supported"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "description": {"type": "string", "minLength": 1},
+          "module_patches": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "simulator": {"type": "object"},
+              "indicators": {"type": "object"},
+              "regimes": {"type": "object"},
+              "embeddings": {"type": "object"},
+              "stability": {"type": "object"},
+              "policies": {"type": "object"},
+              "reports": {"type": "object"}
+            }
+          },
+          "expect_supported": {"type": "boolean"}
+        }
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["flicker_threshold_seconds", "persistence_threshold_seconds", "bootstrap_samples", "bootstrap_seed"],
+      "properties": {
+        "flicker_threshold_seconds": {"type": "number", "minimum": 0},
+        "persistence_threshold_seconds": {"type": "number", "minimum": 0},
+        "bootstrap_samples": {"type": "integer", "minimum": 10},
+        "bootstrap_seed": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}

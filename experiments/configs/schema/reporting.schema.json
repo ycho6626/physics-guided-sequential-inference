@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "include_figures", "include_tables", "limitations_note"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "reporting.v1"},
+    "include_figures": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": [
+          "fig1_roc_pr.png",
+          "fig2_toggle_rate.png",
+          "fig3_persistence_calibration.png",
+          "fig4_stress_curves.png",
+          "fig5_example_sequence.png"
+        ]
+      }
+    },
+    "include_tables": {"type": "boolean"},
+    "limitations_note": {"type": "string", "minLength": 1},
+    "acceptance_criteria": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["persistence_mae_max", "graceful_degradation_max_delta"],
+      "properties": {
+        "persistence_mae_max": {"type": "number", "minimum": 0},
+        "graceful_degradation_max_delta": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["fcr", "mcr", "toggle_rate"],
+          "properties": {
+            "fcr": {"type": "number", "minimum": 0},
+            "mcr": {"type": "number", "minimum": 0},
+            "toggle_rate": {"type": "number", "minimum": 0}
+          }
+        }
+      }
+    },
+    "quality_gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "min_test_events",
+        "min_hazard_events",
+        "min_benign_events",
+        "require_roc_pr_class_diversity",
+        "require_baseline_comparisons",
+        "require_publication_acceptance_evaluable",
+        "require_publication_acceptance_pass",
+        "fail_on_quality_gate_failure"
+      ],
+      "properties": {
+        "min_test_events": {"type": "integer", "minimum": 0},
+        "min_hazard_events": {"type": "integer", "minimum": 0},
+        "min_benign_events": {"type": "integer", "minimum": 0},
+        "require_roc_pr_class_diversity": {"type": "boolean"},
+        "require_baseline_comparisons": {"type": "boolean"},
+        "require_publication_acceptance_evaluable": {"type": "boolean"},
+        "require_publication_acceptance_pass": {"type": "boolean"},
+        "fail_on_quality_gate_failure": {"type": "boolean"}
+      }
+    }
+  }
+}

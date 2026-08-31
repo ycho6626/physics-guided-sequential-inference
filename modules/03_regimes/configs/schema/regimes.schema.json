@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "regimes.schema.json",
+  "title": "Risk Regimes Config",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "distribution",
+    "ground_metric",
+    "optimal_transport",
+    "regimes",
+    "risk_score",
+    "output"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "reg.v1"
+    },
+    "distribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "bins_per_dim", "kde_bandwidth"],
+      "properties": {
+        "method": {"type": "string", "enum": ["histogram", "kde", "gmm"]},
+        "bins_per_dim": {"type": "integer", "minimum": 2},
+        "kde_bandwidth": {"type": "number", "exclusiveMinimum": 0}
+      }
+    },
+    "ground_metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "weights"],
+      "properties": {
+        "type": {"type": "string", "enum": ["mahalanobis", "weighted_euclidean"]},
+        "weights": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "snr",
+            "clipping_fraction",
+            "baseline_slope",
+            "baseline_curvature",
+            "band_ratio_1",
+            "band_ratio_2",
+            "band_ratio_3",
+            "spectral_entropy"
+          ],
+          "properties": {
+            "snr": {"type": "number", "exclusiveMinimum": 0},
+            "clipping_fraction": {"type": "number", "exclusiveMinimum": 0},
+            "baseline_slope": {"type": "number", "exclusiveMinimum": 0},
+            "baseline_curvature": {"type": "number", "exclusiveMinimum": 0},
+            "band_ratio_1": {"type": "number", "exclusiveMinimum": 0},
+            "band_ratio_2": {"type": "number", "exclusiveMinimum": 0},
+            "band_ratio_3": {"type": "number", "exclusiveMinimum": 0},
+            "spectral_entropy": {"type": "number", "exclusiveMinimum": 0}
+          }
+        }
+      }
+    },
+    "optimal_transport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "entropic_reg"],
+      "properties": {
+        "method": {"type": "string", "enum": ["wasserstein2"]},
+        "entropic_reg": {"type": "number", "minimum": 0}
+      }
+    },
+    "regimes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["labels", "boundary_quantiles"],
+      "properties": {
+        "labels": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {"type": "string"}
+        },
+        "boundary_quantiles": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["trusted", "ambiguous", "degraded"],
+          "properties": {
+            "trusted": {"type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1},
+            "ambiguous": {"type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1},
+            "degraded": {"type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1}
+          }
+        }
+      }
+    },
+    "risk_score": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scale", "clamp"],
+      "properties": {
+        "scale": {"type": "string", "enum": ["unit", "percent"]},
+        "clamp": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {"type": "number"}
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["include_debug"],
+      "properties": {
+        "include_debug": {"type": "boolean"}
+      }
+    }
+  }
+}

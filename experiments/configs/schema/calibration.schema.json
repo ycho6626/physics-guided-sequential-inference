@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "run_name", "base_experiment_config", "selection_split", "candidates"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "calibration.v1"},
+    "run_name": {"type": "string", "minLength": 1},
+    "description": {"type": "string"},
+    "base_experiment_config": {"type": "string", "minLength": 1},
+    "baseline_config": {"type": "string", "minLength": 1},
+    "selection_split": {"type": "string", "const": "val"},
+    "acceptance_criteria": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["persistence_mae_max", "graceful_degradation_max_delta"],
+      "properties": {
+        "persistence_mae_max": {"type": "number", "minimum": 0},
+        "graceful_degradation_max_delta": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["fcr", "mcr", "toggle_rate"],
+          "properties": {
+            "fcr": {"type": "number", "minimum": 0},
+            "mcr": {"type": "number", "minimum": 0},
+            "toggle_rate": {"type": "number", "minimum": 0}
+          }
+        }
+      }
+    },
+    "selection_gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "require_publication_acceptance_pass": {"type": "boolean"},
+        "require_baseline_correspondence_verified": {"type": "boolean"},
+        "require_class_diversity": {"type": "boolean"},
+        "disallow_nominal_mcr_one": {"type": "boolean"},
+        "require_hazard_confirmed_when_hazard_events": {"type": "boolean"},
+        "required_baselines": {
+          "type": "array",
+          "items": {"type": "string", "enum": ["B0", "B1", "B2", "B3", "B4", "B5"]},
+          "uniqueItems": true
+        }
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "description", "module_patches"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "description": {"type": "string"},
+          "simplicity_rank": {"type": "integer", "minimum": 0},
+          "module_patches": {"type": "object"}
+        }
+      }
+    }
+  }
+}

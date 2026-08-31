@@ -1,0 +1,100 @@
+schema_version: "calibration.v1"
+run_name: "calibration_paper_candidate"
+description: "Validation-only calibration grid for paper_candidate; selection never uses the test split."
+base_experiment_config: "experiments/configs/paper_candidate.yaml"
+baseline_config: "experiments/configs/baselines_paper_candidate.yaml"
+selection_split: "val"
+acceptance_criteria:
+  persistence_mae_max: 5.0
+  graceful_degradation_max_delta:
+    fcr: 0.25
+    mcr: 0.25
+    toggle_rate: 0.25
+selection_gates:
+  require_publication_acceptance_pass: true
+  require_baseline_correspondence_verified: true
+  require_class_diversity: true
+  disallow_nominal_mcr_one: true
+  require_hazard_confirmed_when_hazard_events: true
+  required_baselines: ["B0", "B1"]
+
+candidates:
+  - name: "base"
+    description: "Unpatched paper-candidate configuration."
+    simplicity_rank: 0
+    module_patches: {}
+
+  - name: "policy_moderately_conservative"
+    description: "Raise confirm/rescan thresholds while reducing confirm cooldown."
+    simplicity_rank: 1
+    module_patches:
+      policies:
+        thresholds:
+          p_confirmable:
+            confirm: 0.90
+            rescan: 0.65
+          persistence_seconds:
+            confirm: 12.0
+            rescan: 3.0
+        hysteresis:
+          confirm_consecutive_steps: 3
+          rescan_consecutive_steps: 1
+          cooldown_after_confirm_steps: 2
+
+  - name: "policy_high_precision"
+    description: "Prioritize false-confirm control with stricter confirmation thresholds."
+    simplicity_rank: 2
+    module_patches:
+      policies:
+        thresholds:
+          p_confirmable:
+            confirm: 0.95
+            rescan: 0.70
+          persistence_seconds:
+            confirm: 15.0
+            rescan: 4.0
+        hysteresis:
+          confirm_consecutive_steps: 3
+          rescan_consecutive_steps: 1
+          cooldown_after_confirm_steps: 1
+
+  - name: "policy_low_cooldown_strict"
+    description: "Use stricter confirm thresholds with no post-confirm cooldown."
+    simplicity_rank: 3
+    module_patches:
+      policies:
+        thresholds:
+          p_confirmable:
+            confirm: 0.90
+            rescan: 0.60
+          persistence_seconds:
+            confirm: 10.0
+            rescan: 2.0
+        hysteresis:
+          confirm_consecutive_steps: 2
+          rescan_consecutive_steps: 1
+          cooldown_after_confirm_steps: 0
+
+  - name: "stability_configured_discrete_policy_moderate"
+    description: "Use configured discrete stability observations with moderate policy conservatism."
+    simplicity_rank: 4
+    module_patches:
+      stability:
+        training:
+          mode: "configured"
+        transitions:
+          mode: "constrained"
+        observations:
+          use: "discrete"
+      policies:
+        thresholds:
+          p_confirmable:
+            confirm: 0.90
+            rescan: 0.65
+          persistence_seconds:
+            confirm: 12.0
+            rescan: 3.0
+        hysteresis:
+          confirm_consecutive_steps: 3
+          rescan_consecutive_steps: 1
+          cooldown_after_confirm_steps: 1

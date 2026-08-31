@@ -1,0 +1,34 @@
+schema_version: "baselines.v1"
+run_name: "baselines"
+experiment_config: "experiments/configs/nominal.yaml"
+include: ["B0", "B1", "B2", "B3", "B4", "B5"]
+
+params:
+  B0:
+    threshold: 0.5
+    max_iter: 300
+    c: 1.0
+  B1:
+    n: 3
+    m: 5
+    score_threshold: 0.55
+    cooldown_steps: 0
+  B2:
+    high_threshold: 0.65
+    low_threshold: 0.40
+    min_hold_steps: 2
+  B3:
+    alpha: 0.25
+    cusum_k: 0.02
+    cusum_h: 0.12
+    score_threshold: 0.62
+  B4:
+    enabled: true
+  B5:
+    enabled: false
+
+evaluation:
+  flicker_threshold_seconds: 3.0
+  persistence_threshold_seconds: 5.0
+  bootstrap_samples: 200
+  bootstrap_seed: 2026

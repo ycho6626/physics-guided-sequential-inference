@@ -1,0 +1,47 @@
+schema_version: "exp.v1"
+run_name: "stress_flicker"
+seed: 123
+
+module_configs:
+  simulator: "modules/01_simulator/configs/simulator.yaml"
+  indicators: "modules/02_indicators/configs/indicators.yaml"
+  regimes: "modules/03_regimes/configs/regimes.yaml"
+  embeddings: "modules/04_embeddings/configs/embeddings.yaml"
+  stability: "modules/05_stability/configs/stability.yaml"
+  policies: "modules/06_policies/configs/policies.yaml"
+  reports: "modules/07_reports/configs/reports.yaml"
+
+simulation:
+  mode: "sequence"
+  n_samples: 240
+  n_sequences: 24
+  sequence_length: 10
+  dt_seconds: 1.0
+  output_format: "parquet"
+  seed: 123
+  overrides:
+    scenarios:
+      flicker:
+        enabled: true
+        prob: 0.5
+        baseline_spike_std: 0.1
+
+split:
+  method: "hash_bucket"
+  unit: "auto"
+  train_frac: 0.8
+  val_frac: 0.1
+  test_frac: 0.1
+
+stress_sets: []
+
+evaluation:
+  flicker_threshold_seconds: 3.0
+  persistence_threshold_seconds: 5.0
+  bootstrap_samples: 200
+  bootstrap_seed: 2026
+  key_metrics: ["fcr", "mcr", "median_ttc", "toggle_rate"]
+
+plots:
+  require_all: true
+  example_sequence_id: ""

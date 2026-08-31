@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "thresholds",
+    "grades",
+    "hysteresis",
+    "safety_vetoes",
+    "actions",
+    "priority",
+    "output"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "policy.v1"
+    },
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["p_confirmable", "persistence_seconds", "hazard_posterior"],
+      "properties": {
+        "p_confirmable": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["confirm", "rescan"],
+          "properties": {
+            "confirm": {"type": "number", "minimum": 0, "maximum": 1},
+            "rescan": {"type": "number", "minimum": 0, "maximum": 1}
+          }
+        },
+        "persistence_seconds": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["confirm", "rescan"],
+          "properties": {
+            "confirm": {"type": "number", "minimum": 0},
+            "rescan": {"type": "number", "minimum": 0}
+          }
+        },
+        "hazard_posterior": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "confirm"],
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "confirm": {"type": "number", "minimum": 0, "maximum": 1}
+          }
+        }
+      }
+    },
+    "grades": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowed_confirm"],
+      "properties": {
+        "allowed_confirm": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "hysteresis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confirm_consecutive_steps", "rescan_consecutive_steps", "cooldown_after_confirm_steps"],
+      "properties": {
+        "confirm_consecutive_steps": {"type": "integer", "minimum": 1},
+        "rescan_consecutive_steps": {"type": "integer", "minimum": 1},
+        "cooldown_after_confirm_steps": {"type": "integer", "minimum": 0}
+      }
+    },
+    "safety_vetoes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_state_entropy", "forbid_confirm_on_alerts"],
+      "properties": {
+        "max_state_entropy": {"type": "number", "minimum": 0},
+        "forbid_confirm_on_alerts": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "actions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowed"],
+      "properties": {
+        "allowed": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "enum": ["HOLD", "RESCAN", "CONFIRM"]}
+        }
+      }
+    },
+    "priority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "mapping"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "mapping": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["HIGH", "MEDIUM", "LOW"],
+          "properties": {
+            "HIGH": {"$ref": "#/$defs/priority_rule"},
+            "MEDIUM": {"$ref": "#/$defs/priority_rule"},
+            "LOW": {"$ref": "#/$defs/priority_rule"}
+          }
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["include_reason_codes", "schema_version"],
+      "properties": {
+        "include_reason_codes": {"type": "boolean"},
+        "schema_version": {"type": "string", "const": "policy.v1"}
+      }
+    }
+  },
+  "$defs": {
+    "priority_rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["p_confirmable", "persistence_seconds"],
+      "properties": {
+        "p_confirmable": {"type": "number", "minimum": 0, "maximum": 1},
+        "persistence_seconds": {"type": "number", "minimum": 0}
+      }
+    }
+  }
+}

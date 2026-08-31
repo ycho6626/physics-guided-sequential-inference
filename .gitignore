@@ -1,0 +1,38 @@
+# Python cache/bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Test/type/lint caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Local environment
+.env
+.venv/
+
+# OS junk
+.DS_Store
+
+# Runtime artifacts
+runs/
+**/runs/
+*.parquet
+*.npz
+*.log
+
+# Allow committed tiny fixtures when needed
+!modules/**/tests/fixtures/
+!modules/**/tests/fixtures/**
+!modules/**/tests/fixtures/**/*.parquet
+!modules/**/tests/fixtures/**/*.npz
+
+# Generated portfolio/demo artifacts
+artifacts/

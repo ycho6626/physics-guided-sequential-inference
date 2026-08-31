@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "physics-guided-sequential-inference-experiments"
+version = "0.1.0"
+description = "Deterministic evaluation harness for physics-guided sequential inference"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "numpy==1.26.4",
+  "pandas>=2.2",
+  "pyarrow>=15",
+  "PyYAML>=6.0",
+  "jsonschema>=4.21",
+  "matplotlib>=3.8",
+  "scipy==1.17.1",
+  "scikit-learn>=1.5",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "torch>=2.2",
+]
+
+[project.scripts]
+exp-run = "experiment_runner.pipeline:main_experiment_cli"
+exp-baselines = "experiment_runner.pipeline:main_baselines_cli"
+exp-ablations = "experiment_runner.pipeline:main_ablations_cli"
+exp-bundle = "experiment_runner.pipeline:main_bundle_cli"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+markers = [
+  "slow: larger-scale experiment regression excluded from default CI path",
+]

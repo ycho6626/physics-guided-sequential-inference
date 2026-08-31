@@ -1,0 +1,252 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "states",
+    "observations",
+    "transitions",
+    "persistence",
+    "grading",
+    "training",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "stab.v1"
+    },
+    "states": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["names", "confirmable_set", "ordering"],
+      "properties": {
+        "names": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "confirmable_set": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "ordering": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "observations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["use", "discrete", "continuous"],
+      "properties": {
+        "use": {
+          "type": "string",
+          "enum": ["discrete", "continuous", "hybrid"]
+        },
+        "discrete": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["field", "init_confusion"],
+          "properties": {
+            "field": {
+              "type": "string",
+              "const": "regime_label"
+            },
+            "init_confusion": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["diagonal", "offdiag_adjacent", "offdiag_far"],
+              "properties": {
+                "diagonal": {"type": "number", "minimum": 0, "maximum": 1},
+                "offdiag_adjacent": {"type": "number", "minimum": 0, "maximum": 1},
+                "offdiag_far": {"type": "number", "minimum": 0, "maximum": 1}
+              }
+            }
+          }
+        },
+        "continuous": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["field", "model", "normalize_inputs", "cov_floor"],
+          "properties": {
+            "field": {
+              "type": "string",
+              "enum": ["x", "z"]
+            },
+            "model": {
+              "type": "string",
+              "const": "gaussian_diag"
+            },
+            "normalize_inputs": {
+              "type": "boolean"
+            },
+            "cov_floor": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        }
+      }
+    },
+    "transitions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "init", "constraints", "priors"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["unconstrained", "constrained"]
+        },
+        "init": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["self", "adjacent", "far"],
+          "properties": {
+            "self": {"type": "number", "minimum": 0, "maximum": 1},
+            "adjacent": {"type": "number", "minimum": 0, "maximum": 1},
+            "far": {"type": "number", "minimum": 0, "maximum": 1}
+          }
+        },
+        "constraints": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["allow_far_jumps", "max_jump"],
+          "properties": {
+            "allow_far_jumps": {"type": "boolean"},
+            "max_jump": {"type": "integer", "minimum": 1}
+          }
+        },
+        "priors": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["dirichlet_alpha_self", "dirichlet_alpha_adjacent", "dirichlet_alpha_far"],
+          "properties": {
+            "dirichlet_alpha_self": {"type": "number", "exclusiveMinimum": 0},
+            "dirichlet_alpha_adjacent": {"type": "number", "exclusiveMinimum": 0},
+            "dirichlet_alpha_far": {"type": "number", "exclusiveMinimum": 0}
+          }
+        }
+      }
+    },
+    "persistence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dt_seconds", "output_units", "min_persistence_seconds"],
+      "properties": {
+        "dt_seconds": {"type": "number", "exclusiveMinimum": 0},
+        "output_units": {"type": "string", "enum": ["seconds"]},
+        "min_persistence_seconds": {"type": "number", "minimum": 0}
+      }
+    },
+    "grading": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["p_confirmable_threshold", "persistence_threshold_seconds", "ordinal"],
+      "properties": {
+        "p_confirmable_threshold": {"type": "number", "minimum": 0, "maximum": 1},
+        "persistence_threshold_seconds": {"type": "number", "minimum": 0},
+        "ordinal": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "rules"],
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "rules": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["A", "B", "C", "D"],
+              "properties": {
+                "A": {
+                  "$ref": "#/$defs/grade_rule"
+                },
+                "B": {
+                  "$ref": "#/$defs/grade_rule"
+                },
+                "C": {
+                  "$ref": "#/$defs/grade_rule"
+                },
+                "D": {
+                  "$ref": "#/$defs/grade_rule"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "training": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "seed", "max_em_iters", "tol", "split"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["fit", "configured"]
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_em_iters": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tol": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "split": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["method", "train_frac"],
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "hash"
+            },
+            "train_frac": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "exclusiveMaximum": 1
+            }
+          }
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["include_reason_codes", "include_smoothing", "schema_version"],
+      "properties": {
+        "include_reason_codes": {"type": "boolean"},
+        "include_smoothing": {"type": "boolean"},
+        "schema_version": {
+          "type": "string",
+          "const": "stab.v1"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "grade_rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["p_confirmable", "persistence_s"],
+      "properties": {
+        "p_confirmable": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "persistence_s": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

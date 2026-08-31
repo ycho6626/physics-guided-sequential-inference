@@ -1,0 +1,55 @@
+# Configuration (Decision Policy) — `configs/policies.yaml`
+
+```yaml
+schema_version: "policy.v1"
+
+thresholds:
+  p_confirmable:
+    confirm: 0.85
+    rescan: 0.60
+  persistence_seconds:
+    confirm: 10.0
+    rescan: 2.0
+  hazard_posterior:
+    enabled: false
+    confirm: 0.90
+
+grades:
+  allowed_confirm: ["A", "B"]
+
+hysteresis:
+  confirm_consecutive_steps: 3
+  rescan_consecutive_steps: 1
+  cooldown_after_confirm_steps: 5
+
+safety_vetoes:
+  max_state_entropy: 1.2
+  forbid_confirm_on_alerts:
+    - "BOUNDARY_OSCILLATION"
+    - "DEGRADING_FAST"
+
+actions:
+  allowed: ["HOLD", "RESCAN", "CONFIRM"]
+
+priority:
+  enabled: true
+  mapping:
+    HIGH:
+      p_confirmable: 0.95
+      persistence_seconds: 30.0
+    MEDIUM:
+      p_confirmable: 0.85
+      persistence_seconds: 10.0
+    LOW:
+      p_confirmable: 0.0
+      persistence_seconds: 0.0
+
+output:
+  include_reason_codes: true
+  schema_version: "policy.v1"
+```
+
+## Notes
+- Thresholds should be set conservatively for Phase-1.
+- All numeric values must be documented and justified in experiments.
+- Validation is strict/fail-closed (unknown keys, missing fields, invalid ranges/ordering).

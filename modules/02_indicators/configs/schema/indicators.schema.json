@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "indicators.schema.json",
+  "title": "Indicators Config",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "preprocessing",
+    "clipping",
+    "baseline",
+    "snr",
+    "band_ratios",
+    "entropy",
+    "output"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "ind.v1"
+    },
+    "preprocessing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["normalization", "smoothing"],
+      "properties": {
+        "normalization": {
+          "type": "string",
+          "enum": ["none", "unit_max", "unit_area"],
+          "default": "unit_max"
+        },
+        "smoothing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "method", "window", "poly_order"],
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "method": {"type": "string", "enum": ["savitzky_golay", "moving_average"]},
+            "window": {"type": "integer", "minimum": 3},
+            "poly_order": {"type": "integer", "minimum": 1}
+          }
+        }
+      }
+    },
+    "clipping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "y_min", "y_max", "eps"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "y_min": {"type": "number"},
+        "y_max": {"type": "number"},
+        "eps": {"type": "number", "exclusiveMinimum": 0}
+      }
+    },
+    "baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "model", "robust_fit", "lambda_rescale", "eps"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "model": {"type": "string", "enum": ["poly2", "poly3", "spline"]},
+        "robust_fit": {"type": "boolean"},
+        "lambda_rescale": {"type": "boolean"},
+        "eps": {"type": "number", "exclusiveMinimum": 0}
+      }
+    },
+    "snr": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "signal_stat", "noise_stat", "snr_max", "eps"],
+      "properties": {
+        "mode": {"type": "string", "enum": ["residual", "highfreq"]},
+        "signal_stat": {"type": "string", "enum": ["median", "mean"]},
+        "noise_stat": {"type": "string", "enum": ["mad", "std"]},
+        "snr_max": {"type": "number", "minimum": 0},
+        "eps": {"type": "number", "exclusiveMinimum": 0}
+      }
+    },
+    "band_ratios": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stat", "eps", "ratio_min", "ratio_max", "ratio_1", "ratio_2", "ratio_3"],
+      "properties": {
+        "stat": {"type": "string", "enum": ["mean", "median", "integral", "trimmed_mean"]},
+        "eps": {"type": "number", "exclusiveMinimum": 0},
+        "ratio_min": {"type": "number"},
+        "ratio_max": {"type": "number"},
+        "ratio_1": {"$ref": "#/$defs/ratio_band"},
+        "ratio_2": {"$ref": "#/$defs/ratio_band"},
+        "ratio_3": {"$ref": "#/$defs/ratio_band"}
+      }
+    },
+    "entropy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "use_residual", "normalize", "eps", "bins"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "use_residual": {"type": "boolean"},
+        "normalize": {"type": "boolean"},
+        "eps": {"type": "number", "exclusiveMinimum": 0},
+        "bins": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "n_bins"],
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "n_bins": {"type": "integer", "minimum": 2}
+          }
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["include_audit_fields", "include_passthrough_labels"],
+      "properties": {
+        "include_audit_fields": {"type": "boolean"},
+        "include_passthrough_labels": {"type": "boolean", "const": true}
+      }
+    }
+  },
+  "$defs": {
+    "wavelength_band": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {"type": "number"}
+    },
+    "ratio_band": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["numerator", "denominator"],
+      "properties": {
+        "numerator": {"$ref": "#/$defs/wavelength_band"},
+        "denominator": {"$ref": "#/$defs/wavelength_band"}
+      }
+    }
+  }
+}

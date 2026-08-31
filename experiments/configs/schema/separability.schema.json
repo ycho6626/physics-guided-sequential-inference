@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "run_name", "scenarios", "positive_label", "negative_label", "gates"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "separability_audit.v1"},
+    "run_name": {"type": "string", "minLength": 1},
+    "description": {"type": "string"},
+    "scenarios": {
+      "oneOf": [
+        {"type": "string", "const": "all"},
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        }
+      ]
+    },
+    "include_pooled": {"type": "boolean"},
+    "spectrum_ceiling": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "d_phys_bins": {"type": "integer", "minimum": 1},
+        "baseline_poly_degree": {"type": "integer", "const": 2},
+        "peak_window_k": {"type": "number", "exclusiveMinimum": 0},
+        "nuisance_shrinkage": {"type": "number", "minimum": 0, "maximum": 1},
+        "ceiling_validity_tol": {"type": "number", "minimum": 0, "maximum": 1},
+        "peak_core_k": {"type": "number", "exclusiveMinimum": 0},
+        "shoulder_offset_k": {"type": "number", "exclusiveMinimum": 0},
+        "shoulder_halfwidth_k": {"type": "number", "exclusiveMinimum": 0},
+        "detectability_trend_margin": {"type": "number", "minimum": 0},
+        "bootstrap_samples": {"type": "integer", "minimum": 1},
+        "bootstrap_seed": {"type": "integer"},
+        "power_min_per_class": {"type": "integer", "minimum": 1},
+        "confound_provenance_enabled": {"type": "boolean"},
+        "envelope_feasibility_enabled": {"type": "boolean"},
+        "envelope_levels": {"type": "integer", "minimum": 1},
+        "envelope_power_min_hazard": {"type": "integer", "minimum": 1}
+      }
+    },
+    "positive_label": {"type": "string", "minLength": 1},
+    "negative_label": {"type": "string", "minLength": 1},
+    "gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min_train_per_class", "min_val_per_class", "roc_auc_min", "average_precision_min"],
+      "properties": {
+        "min_train_per_class": {"type": "integer", "minimum": 1},
+        "min_val_per_class": {"type": "integer", "minimum": 1},
+        "roc_auc_min": {"type": "number", "minimum": 0, "maximum": 1},
+        "average_precision_min": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    }
+  }
+}

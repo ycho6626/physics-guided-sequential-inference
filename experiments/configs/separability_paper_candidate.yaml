@@ -1,0 +1,30 @@
+schema_version: "separability_audit.v1"
+run_name: "separability_paper_candidate"
+description: "Validation-only upstream separability audit for paper_candidate run artifacts; no test split access."
+scenarios: "all"
+include_pooled: true
+positive_label: "hazard"
+negative_label: "benign"
+gates:
+  min_train_per_class: 5
+  min_val_per_class: 2
+  roc_auc_min: 0.75
+  average_precision_min: 0.75
+spectrum_ceiling:
+  enabled: true
+  d_phys_bins: 3
+  baseline_poly_degree: 2
+  peak_window_k: 4.0
+  nuisance_shrinkage: 0.1
+  ceiling_validity_tol: 0.02
+  peak_core_k: 1.5
+  shoulder_offset_k: 3.0
+  shoulder_halfwidth_k: 1.0
+  detectability_trend_margin: 0.05
+  bootstrap_samples: 1000
+  bootstrap_seed: 2026
+  power_min_per_class: 25
+  confound_provenance_enabled: true
+  envelope_feasibility_enabled: true
+  envelope_levels: 8
+  envelope_power_min_hazard: 20

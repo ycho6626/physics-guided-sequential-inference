@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "embedding",
+    "model",
+    "loss",
+    "training",
+    "data_split",
+    "output"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "emb.v1"
+    },
+    "embedding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dim", "normalize"],
+      "properties": {
+        "dim": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "normalize": {
+          "type": "boolean"
+        }
+      }
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "hidden_dims", "activation", "batch_norm"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "mlp"
+        },
+        "hidden_dims": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "const": [32, 16]
+        },
+        "activation": {
+          "type": "string",
+          "const": "relu"
+        },
+        "batch_norm": {
+          "type": "boolean"
+        }
+      }
+    },
+    "loss": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["classification", "metric"],
+      "properties": {
+        "classification": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "weight"],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "weight": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "metric": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "type", "margin", "weight"],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "type": {
+              "type": "string",
+              "enum": ["triplet", "contrastive"]
+            },
+            "margin": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "weight": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "training": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["epochs", "batch_size", "learning_rate", "weight_decay", "early_stopping", "seed"],
+      "properties": {
+        "epochs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "batch_size": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "learning_rate": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "weight_decay": {
+          "type": "number",
+          "minimum": 0
+        },
+        "early_stopping": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "patience"],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "patience": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "data_split": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "train_frac"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "const": "hash"
+        },
+        "train_frac": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "exclusiveMaximum": 1
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["include_passthrough"],
+      "properties": {
+        "include_passthrough": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

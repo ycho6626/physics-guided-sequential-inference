@@ -1,0 +1,24 @@
+schema_version: "reporting.v1"
+include_figures:
+  - "fig1_roc_pr.png"
+  - "fig2_toggle_rate.png"
+  - "fig3_persistence_calibration.png"
+  - "fig4_stress_curves.png"
+  - "fig5_example_sequence.png"
+include_tables: true
+limitations_note: "Synthetic-only Phase-1 evaluation. External black-box baseline (B5) omitted because no external score feed is available in-repo."
+acceptance_criteria:
+  persistence_mae_max: 5.0
+  graceful_degradation_max_delta:
+    fcr: 0.25
+    mcr: 0.25
+    toggle_rate: 0.25
+quality_gates:
+  min_test_events: 20
+  min_hazard_events: 5
+  min_benign_events: 5
+  require_roc_pr_class_diversity: true
+  require_baseline_comparisons: true
+  require_publication_acceptance_evaluable: true
+  require_publication_acceptance_pass: true
+  fail_on_quality_gate_failure: false

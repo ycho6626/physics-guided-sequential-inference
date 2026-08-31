@@ -1,0 +1,187 @@
+name: python-tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  module-01-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install Module 01
+        run: |
+          python -m pip install -U pip
+          python -m pip install -e modules/01_simulator[dev]
+
+      - name: Run Module 01 tests
+        run: |
+          cd modules/01_simulator
+          pytest -q
+
+  module-02-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install Module 02
+        run: |
+          python -m pip install -U pip
+          python -m pip install -e modules/02_indicators[dev]
+
+      - name: Run Module 02 tests
+        run: |
+          cd modules/02_indicators
+          pytest -q
+
+  module-03-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install Module 03
+        run: |
+          python -m pip install -U pip
+          python -m pip install -e modules/03_regimes[dev]
+
+      - name: Run Module 03 tests
+        run: |
+          cd modules/03_regimes
+          pytest -q -m "not slow"
+
+  module-04-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install Module 04
+        run: |
+          python -m pip install -U pip
+          python -m pip install "numpy<2"
+          python -m pip install -e modules/04_embeddings[dev]
+
+      - name: Run Module 04 tests
+        run: |
+          cd modules/04_embeddings
+          PYTHONPATH=src pytest -q
+
+  module-05-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install Module 05
+        run: |
+          python -m pip install -U pip
+          python -m pip install -e modules/05_stability[dev]
+
+      - name: Run Module 05 tests
+        run: |
+          cd modules/05_stability
+          PYTHONPATH=src pytest -q -m "not slow"
+
+  module-06-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install Module 06
+        run: |
+          python -m pip install -U pip
+          python -m pip install -e modules/06_policies[dev]
+
+      - name: Run Module 06 tests
+        run: |
+          cd modules/06_policies
+          PYTHONPATH=src pytest -q -m "not slow"
+
+  module-07-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install Module 07
+        run: |
+          python -m pip install -U pip
+          python -m pip install -e modules/07_reports[dev]
+
+      - name: Run Module 07 tests
+        run: |
+          cd modules/07_reports
+          PYTHONPATH=src pytest -q -m "not slow"
+
+  experiments-tests:
+    runs-on: ubuntu-latest
+    env:
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install experiments stack
+        run: |
+          python -m pip install -U pip
+          python -m pip install -e experiments[dev]
+
+      - name: Run experiments tests
+        run: |
+          cd experiments
+          /usr/bin/env python -m pytest -q -m "not slow"

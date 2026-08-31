@@ -1,0 +1,82 @@
+schema_version: "ablations.v1"
+run_name: "ablations"
+experiment_config: "experiments/configs/nominal.yaml"
+
+variants:
+  - name: "ind_entropy_off"
+    description: "Disable indicator entropy"
+    module_patches:
+      indicators:
+        entropy:
+          enabled: false
+    expect_supported: true
+
+  - name: "reg_weighted_euclidean"
+    description: "Use weighted Euclidean ground metric"
+    module_patches:
+      regimes:
+        ground_metric:
+          type: "weighted_euclidean"
+    expect_supported: true
+
+  - name: "emb_no_metric_loss"
+    description: "Embedding with classification loss only"
+    module_patches:
+      embeddings:
+        loss:
+          metric:
+            enabled: false
+            weight: 0.0
+    expect_supported: true
+
+  - name: "emb_dim_4"
+    description: "Embedding dimension 4"
+    module_patches:
+      embeddings:
+        embedding:
+          dim: 4
+    expect_supported: true
+
+  - name: "stability_configured_unconstrained_discrete"
+    description: "Configured + unconstrained + discrete"
+    module_patches:
+      stability:
+        training:
+          mode: "configured"
+        transitions:
+          mode: "unconstrained"
+        observations:
+          use: "discrete"
+    expect_supported: true
+
+  - name: "policy_hysteresis_off"
+    description: "Reduce hysteresis and cooldown"
+    module_patches:
+      policies:
+        hysteresis:
+          confirm_consecutive_steps: 1
+          rescan_consecutive_steps: 1
+          cooldown_after_confirm_steps: 0
+    expect_supported: true
+
+  - name: "regime_3_state_unsupported"
+    description: "3-state regime variant unsupported upstream"
+    module_patches:
+      regimes:
+        regimes:
+          labels: ["trusted", "degraded", "high_risk"]
+    expect_supported: false
+
+  - name: "policy_confirmable_set_unsupported"
+    description: "Policy confirmable-set change requires upstream semantics"
+    module_patches:
+      stability:
+        states:
+          confirmable_set: ["trusted", "ambiguous"]
+    expect_supported: false
+
+evaluation:
+  flicker_threshold_seconds: 3.0
+  persistence_threshold_seconds: 5.0
+  bootstrap_samples: 200
+  bootstrap_seed: 2026

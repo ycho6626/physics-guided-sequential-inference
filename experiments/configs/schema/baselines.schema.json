@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "run_name", "experiment_config", "include", "params", "evaluation"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "baselines.v1"},
+    "run_name": {"type": "string", "minLength": 1},
+    "experiment_config": {"type": "string", "minLength": 1},
+    "include": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "enum": ["B0", "B1", "B2", "B3", "B4", "B5"]}
+    },
+    "params": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["B0", "B1", "B2", "B3", "B4", "B5"],
+      "properties": {
+        "B0": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["threshold", "max_iter", "c"],
+          "properties": {
+            "threshold": {"type": "number", "minimum": 0, "maximum": 1},
+            "max_iter": {"type": "integer", "minimum": 1},
+            "c": {"type": "number", "exclusiveMinimum": 0}
+          }
+        },
+        "B1": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["n", "m", "score_threshold", "cooldown_steps"],
+          "properties": {
+            "n": {"type": "integer", "minimum": 1},
+            "m": {"type": "integer", "minimum": 1},
+            "score_threshold": {"type": "number", "minimum": 0, "maximum": 1},
+            "cooldown_steps": {"type": "integer", "minimum": 0}
+          }
+        },
+        "B2": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["high_threshold", "low_threshold", "min_hold_steps"],
+          "properties": {
+            "high_threshold": {"type": "number", "minimum": 0, "maximum": 1},
+            "low_threshold": {"type": "number", "minimum": 0, "maximum": 1},
+            "min_hold_steps": {"type": "integer", "minimum": 0}
+          }
+        },
+        "B3": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["alpha", "cusum_k", "cusum_h", "score_threshold"],
+          "properties": {
+            "alpha": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+            "cusum_k": {"type": "number", "minimum": 0},
+            "cusum_h": {"type": "number", "exclusiveMinimum": 0},
+            "score_threshold": {"type": "number", "minimum": 0, "maximum": 1}
+          }
+        },
+        "B4": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled"],
+          "properties": {"enabled": {"type": "boolean"}}
+        },
+        "B5": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled"],
+          "properties": {"enabled": {"type": "boolean"}}
+        }
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["flicker_threshold_seconds", "persistence_threshold_seconds", "bootstrap_samples", "bootstrap_seed"],
+      "properties": {
+        "flicker_threshold_seconds": {"type": "number", "minimum": 0},
+        "persistence_threshold_seconds": {"type": "number", "minimum": 0},
+        "bootstrap_samples": {"type": "integer", "minimum": 10},
+        "bootstrap_seed": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_name",
+    "seed",
+    "module_configs",
+    "simulation",
+    "split",
+    "stress_sets",
+    "evaluation",
+    "plots"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "exp.v1"},
+    "run_name": {"type": "string", "minLength": 1},
+    "seed": {"type": "integer", "minimum": 0},
+    "module_configs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["simulator", "indicators", "regimes", "embeddings", "stability", "policies", "reports"],
+      "properties": {
+        "simulator": {"type": "string", "minLength": 1},
+        "indicators": {"type": "string", "minLength": 1},
+        "regimes": {"type": "string", "minLength": 1},
+        "embeddings": {"type": "string", "minLength": 1},
+        "stability": {"type": "string", "minLength": 1},
+        "policies": {"type": "string", "minLength": 1},
+        "reports": {"type": "string", "minLength": 1}
+      }
+    },
+    "module_patches": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "simulator": {"type": "object"},
+        "indicators": {"type": "object"},
+        "regimes": {"type": "object"},
+        "embeddings": {"type": "object"},
+        "stability": {"type": "object"},
+        "policies": {"type": "object"},
+        "reports": {"type": "object"}
+      }
+    },
+    "simulation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "n_samples", "n_sequences", "sequence_length", "dt_seconds", "output_format", "seed", "overrides"],
+      "properties": {
+        "mode": {"type": "string", "enum": ["iid", "sequence"]},
+        "n_samples": {"type": "integer", "minimum": 1},
+        "n_sequences": {"type": "integer", "minimum": 1},
+        "sequence_length": {"type": "integer", "minimum": 1},
+        "dt_seconds": {"type": "number", "exclusiveMinimum": 0},
+        "output_format": {"type": "string", "enum": ["parquet", "npz"]},
+        "seed": {"type": "integer", "minimum": 0},
+        "overrides": {"type": "object"}
+      }
+    },
+    "split": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "unit", "train_frac", "val_frac", "test_frac"],
+      "properties": {
+        "method": {"type": "string", "const": "hash_bucket"},
+        "unit": {"type": "string", "enum": ["auto", "sample_id", "sequence_id"]},
+        "train_frac": {"type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1},
+        "val_frac": {"type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1},
+        "test_frac": {"type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1}
+      }
+    },
+    "stress_sets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "severity", "simulation_overrides"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "severity": {"type": "number", "minimum": 0},
+          "simulation_overrides": {"type": "object"}
+        }
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["flicker_threshold_seconds", "persistence_threshold_seconds", "bootstrap_samples", "bootstrap_seed", "key_metrics"],
+      "properties": {
+        "flicker_threshold_seconds": {"type": "number", "minimum": 0},
+        "persistence_threshold_seconds": {"type": "number", "minimum": 0},
+        "bootstrap_samples": {"type": "integer", "minimum": 10},
+        "bootstrap_seed": {"type": "integer", "minimum": 0},
+        "key_metrics": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "plots": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["require_all", "example_sequence_id"],
+      "properties": {
+        "require_all": {"type": "boolean"},
+        "example_sequence_id": {"type": "string"}
+      }
+    }
+  }
+}
