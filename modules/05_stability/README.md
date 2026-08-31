@@ -48,8 +48,39 @@ Observation mode compatibility is validated fail-closed:
 - `observations.use: continuous|hybrid` + `field: z` -> `--embeddings` required
 - `observations.use: continuous|hybrid` + `field: x` -> `--indicators` required
 
+### Frozen apply
+`stability-apply` runs inference with a previously fitted model — no refitting,
+no split, no statistic estimation:
+
+```bash
+cd modules/05_stability
+PYTHONPATH=src python -m semgen stability-apply \
+  --regimes runs/.../reg/regime_scores.parquet \
+  --embeddings runs/.../emb/embeddings.parquet \
+  --model runs/.../stab/hmm_model \
+  --config configs/stability.yaml \
+  --out runs/.../stab_apply
+```
+
+Required flags: `--regimes`, `--model` (directory with `params.json` +
+`state_defs.json`), `--config`, `--out`. Optional: `--embeddings`,
+`--indicators` (same observation-mode pairing rules as fit).
+
+Fail-closed apply guarantees:
+- the config's states, observation mode, and continuous field must agree with
+  the frozen model
+- fit-time `persistence.dt_seconds` and `outputs.include_smoothing` are stored
+  in `state_defs.json:inference_settings`; the live config must match both, and
+  apply uses the serialized values
+- continuous/hybrid inputs are normalized with the frozen mean/std stored in
+  `params.json` (`continuous_normalization`); statistics are never refit on
+  the applied set, and a missing/disabled block fails closed when the mode
+  requires it
+- inference is per-sequence: a sequence's outputs depend only on its own rows
+  and the frozen model
+
 ## Output Artifacts
-`--out <dir>` writes:
+`--out <dir>` writes (fit, `stability`):
 - `stability.parquet`
 - `hmm_model/params.json`
 - `hmm_model/state_defs.json`
@@ -68,6 +99,23 @@ Example layout:
     state_defs.json
     training_meta.json
 ```
+
+`params.json` (`hmm_params.v1`) includes the additive
+`continuous_normalization` block ({enabled, method, mean, std}; `{enabled:
+false}` when no continuous channel was normalized) so the serialized model is
+self-contained for frozen apply.
+
+`state_defs.json` (`hmm_state_defs.v1`) includes the additive
+`inference_settings` block with exactly `dt_seconds` and `include_smoothing`.
+These are the result-bearing inference settings frozen for apply; unrelated
+training and presentation-only settings remain live configuration.
+
+`stability-apply` writes only:
+- `stability.parquet` (same schema as fit)
+- `stability_apply_manifest.json` (module-manifest conventions plus
+  `model_path`/`model_hash` over `params.json` + `state_defs.json`)
+
+Apply never writes `hmm_model/` artifacts.
 
 ## Stability Outputs
 `stability.parquet` contains:

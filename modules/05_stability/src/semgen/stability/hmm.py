@@ -533,8 +533,18 @@ def infer_hmm(
     return InferenceResult(posterior=used, filtered=filtered, log_likelihood=float(total_ll))
 
 
-def model_to_params_payload(model: HMMModel) -> dict[str, Any]:
-    """Serialize model parameters for `hmm_model/params.json`."""
+def model_to_params_payload(
+    model: HMMModel,
+    *,
+    continuous_normalization: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Serialize model parameters for `hmm_model/params.json`.
+
+    `continuous_normalization` is the additive `hmm_params.v1` block recording
+    the frozen train-split z-score statistics used to normalize continuous
+    observations. `{enabled: false}` is written when no continuous channel was
+    normalized (including when `continuous_normalization` is omitted).
+    """
     payload: dict[str, Any] = {
         "schema_version": "hmm_params.v1",
         "observation_mode": model.observation_mode,
@@ -558,4 +568,160 @@ def model_to_params_payload(model: HMMModel) -> dict[str, Any]:
             "var": [[float(v) for v in row] for row in model.continuous_var.tolist()],
         }
 
+    if continuous_normalization is None or not bool(continuous_normalization.get("enabled", False)):
+        payload["continuous_normalization"] = {"enabled": False}
+    else:
+        payload["continuous_normalization"] = {
+            "enabled": True,
+            "method": str(continuous_normalization["method"]),
+            "mean": [float(v) for v in continuous_normalization["mean"]],
+            "std": [float(v) for v in continuous_normalization["std"]],
+        }
+
     return payload
+
+
+def _require_key(payload: dict[str, Any], key: str, *, context: str) -> Any:
+    if key not in payload:
+        raise ModelValidationError(f"{context} is missing required key '{key}'")
+    return payload[key]
+
+
+def _validate_stochastic_vector(values: Any, *, n_states: int, name: str) -> np.ndarray:
+    vec = np.asarray(values, dtype=np.float64)
+    if vec.ndim != 1 or vec.shape[0] != n_states:
+        raise ModelValidationError(f"{name} must be a length-{n_states} vector")
+    if not np.isfinite(vec).all():
+        raise ModelValidationError(f"{name} contains non-finite values")
+    if np.any(vec < 0.0):
+        raise ModelValidationError(f"{name} contains negative probabilities")
+    if not np.allclose(np.sum(vec), 1.0, atol=1e-6, rtol=0.0):
+        raise ModelValidationError(f"{name} does not sum to 1")
+    return vec
+
+
+def _validate_row_stochastic_matrix(values: Any, *, shape: tuple[int, int], name: str) -> np.ndarray:
+    matrix = np.asarray(values, dtype=np.float64)
+    if matrix.ndim != 2 or matrix.shape != shape:
+        raise ModelValidationError(f"{name} must have shape {shape}")
+    if not np.isfinite(matrix).all():
+        raise ModelValidationError(f"{name} contains non-finite values")
+    if np.any(matrix < 0.0):
+        raise ModelValidationError(f"{name} contains negative probabilities")
+    if not np.allclose(np.sum(matrix, axis=1), 1.0, atol=1e-6, rtol=0.0):
+        raise ModelValidationError(f"{name} rows do not sum to 1")
+    return matrix
+
+
+def params_payload_to_model(
+    params_payload: dict[str, Any],
+    state_defs_payload: dict[str, Any],
+) -> HMMModel:
+    """Rebuild a frozen `HMMModel` from serialized params + state defs payloads.
+
+    Validates schema versions, state-name consistency, shapes, finiteness, and
+    row-stochastic constraints; fails closed with `ModelValidationError` on any
+    inconsistency.
+    """
+    if not isinstance(params_payload, dict):
+        raise ModelValidationError("params payload must be a mapping")
+    if not isinstance(state_defs_payload, dict):
+        raise ModelValidationError("state defs payload must be a mapping")
+
+    params_schema = str(_require_key(params_payload, "schema_version", context="params payload"))
+    if params_schema != "hmm_params.v1":
+        raise ModelValidationError(f"unsupported params schema_version: {params_schema}")
+    defs_schema = str(_require_key(state_defs_payload, "schema_version", context="state defs payload"))
+    if defs_schema != "hmm_state_defs.v1":
+        raise ModelValidationError(f"unsupported state defs schema_version: {defs_schema}")
+
+    state_names = [str(s) for s in _require_key(params_payload, "state_names", context="params payload")]
+    if not state_names:
+        raise ModelValidationError("params state_names must not be empty")
+    if len(state_names) != len(set(state_names)):
+        raise ModelValidationError("params state_names must be unique")
+
+    defs_state_names = [str(s) for s in _require_key(state_defs_payload, "state_names", context="state defs payload")]
+    if defs_state_names != state_names:
+        raise ModelValidationError("state_names disagree between params and state defs payloads")
+
+    confirmable_set = [str(s) for s in _require_key(state_defs_payload, "confirmable_set", context="state defs payload")]
+    if not confirmable_set:
+        raise ModelValidationError("state defs confirmable_set must not be empty")
+    if not set(confirmable_set).issubset(set(state_names)):
+        raise ModelValidationError("state defs confirmable_set must be a subset of state_names")
+
+    ordering = [str(s) for s in _require_key(state_defs_payload, "ordering", context="state defs payload")]
+    if set(ordering) != set(state_names) or len(ordering) != len(state_names):
+        raise ModelValidationError("state defs ordering must contain exactly the state_names")
+
+    observation_mode = str(_require_key(params_payload, "observation_mode", context="params payload"))
+    if observation_mode not in {"discrete", "continuous", "hybrid"}:
+        raise ModelValidationError(f"unsupported observation_mode: {observation_mode}")
+    training_mode = str(_require_key(params_payload, "training_mode", context="params payload"))
+
+    n_states = len(state_names)
+    initial_distribution = _validate_stochastic_vector(
+        _require_key(params_payload, "initial_distribution", context="params payload"),
+        n_states=n_states,
+        name="initial_distribution",
+    )
+    transition_matrix = _validate_row_stochastic_matrix(
+        _require_key(params_payload, "transition_matrix", context="params payload"),
+        shape=(n_states, n_states),
+        name="transition_matrix",
+    )
+
+    discrete_labels = list(state_names)
+    discrete_emission: np.ndarray | None = None
+    if observation_mode in {"discrete", "hybrid"}:
+        block = _require_key(params_payload, "discrete_emission", context="params payload")
+        if not isinstance(block, dict):
+            raise ModelValidationError("discrete_emission block must be a mapping")
+        discrete_labels = [str(s) for s in _require_key(block, "labels", context="discrete_emission block")]
+        if discrete_labels != state_names:
+            raise ModelValidationError("discrete_emission labels disagree with state_names")
+        discrete_emission = _validate_row_stochastic_matrix(
+            _require_key(block, "matrix", context="discrete_emission block"),
+            shape=(n_states, n_states),
+            name="discrete_emission matrix",
+        )
+
+    continuous_field: str | None = None
+    continuous_mean: np.ndarray | None = None
+    continuous_var: np.ndarray | None = None
+    if observation_mode in {"continuous", "hybrid"}:
+        block = _require_key(params_payload, "continuous_emission", context="params payload")
+        if not isinstance(block, dict):
+            raise ModelValidationError("continuous_emission block must be a mapping")
+        if str(_require_key(block, "model", context="continuous_emission block")) != "gaussian_diag":
+            raise ModelValidationError("continuous_emission model must be gaussian_diag")
+        continuous_field = str(_require_key(block, "field", context="continuous_emission block"))
+        if not continuous_field:
+            raise ModelValidationError("continuous_emission field must be non-empty")
+
+        continuous_mean = np.asarray(_require_key(block, "mean", context="continuous_emission block"), dtype=np.float64)
+        continuous_var = np.asarray(_require_key(block, "var", context="continuous_emission block"), dtype=np.float64)
+        if continuous_mean.ndim != 2 or continuous_mean.shape[0] != n_states or continuous_mean.shape[1] < 1:
+            raise ModelValidationError("continuous_emission mean must have shape (n_states, d>=1)")
+        if continuous_var.shape != continuous_mean.shape:
+            raise ModelValidationError("continuous_emission var shape disagrees with mean shape")
+        if not np.isfinite(continuous_mean).all() or not np.isfinite(continuous_var).all():
+            raise ModelValidationError("continuous_emission parameters contain non-finite values")
+        if np.any(continuous_var <= 0.0):
+            raise ModelValidationError("continuous_emission var must be strictly positive")
+
+    return HMMModel(
+        state_names=state_names,
+        confirmable_set=confirmable_set,
+        ordering=ordering,
+        observation_mode=observation_mode,
+        training_mode=training_mode,
+        initial_distribution=initial_distribution,
+        transition_matrix=transition_matrix,
+        discrete_labels=discrete_labels,
+        discrete_emission=discrete_emission,
+        continuous_field=continuous_field,
+        continuous_mean=continuous_mean,
+        continuous_var=continuous_var,
+    )

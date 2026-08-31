@@ -12,7 +12,7 @@ from typing import Any
 import yaml
 
 from semgen.embeddings.config import config_hash
-from semgen.embeddings.pipeline import EmbeddingArtifacts
+from semgen.embeddings.pipeline import ApplyArtifacts, EmbeddingArtifacts
 
 
 def sha256_file(path: Path) -> str:
@@ -151,6 +151,65 @@ def write_outputs(
     }
 
     manifest_path = out_dir / "embeddings_manifest.json"
+    with manifest_path.open("w", encoding="utf-8") as handle:
+        json.dump(manifest, handle, sort_keys=True, indent=2)
+        handle.write("\n")
+
+    return manifest
+
+
+def _apply_input_hash(indicators_path: Path, model_dir: Path) -> tuple[str, str]:
+    input_path_value = _canonical_json(
+        {
+            "indicators": str(indicators_path),
+            "model": str(model_dir),
+        }
+    )
+    file_hash_map = {str(indicators_path): sha256_file(indicators_path)}
+    for name in ("model.pt", "model_meta.json", "normalization.json"):
+        model_file = model_dir / name
+        file_hash_map[str(model_file)] = sha256_file(model_file)
+    input_hash = hashlib.sha256(_canonical_json(file_hash_map).encode("utf-8")).hexdigest()
+    return input_path_value, input_hash
+
+
+def write_apply_outputs(
+    artifacts: ApplyArtifacts,
+    out_dir: Path,
+    indicators_path: Path,
+    model_dir: Path,
+    config: dict[str, Any],
+    config_path: Path,
+    module_root: Path,
+) -> dict[str, Any]:
+    """Write frozen-apply embeddings output + standardized apply manifest."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    embeddings_path = out_dir / "embeddings.parquet"
+    artifacts.embeddings_df.to_parquet(embeddings_path, index=False, engine="pyarrow", compression="zstd")
+
+    artifact_hashes = {
+        str(embeddings_path.relative_to(out_dir)): sha256_file(embeddings_path),
+    }
+
+    cfg_hash = config_hash(config)
+    input_path_value, input_hash_value = _apply_input_hash(indicators_path=indicators_path, model_dir=model_dir)
+    now = datetime.now(timezone.utc)
+
+    manifest = {
+        "module_name": "embeddings",
+        "schema_version": "module_manifest.v1",
+        "created_at": now.isoformat(),
+        "run_id": f"{now.strftime('%Y%m%dT%H%M%SZ')}_{cfg_hash[:8]}",
+        "config_path": str(config_path),
+        "config_hash": cfg_hash,
+        "input_path": input_path_value,
+        "input_hash": input_hash_value,
+        "code_revision": _detect_code_revision(module_root),
+        "artifacts": artifact_hashes,
+    }
+
+    manifest_path = out_dir / "embeddings_apply_manifest.json"
     with manifest_path.open("w", encoding="utf-8") as handle:
         json.dump(manifest, handle, sort_keys=True, indent=2)
         handle.write("\n")

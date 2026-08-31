@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from semgen.embeddings.config import INDICATOR_DIM
+from semgen.embeddings.config import ALLOWED_SPLIT_UNITS, INDICATOR_DIM
 from semgen.embeddings.errors import InputValidationError, TrainingError
 
 
@@ -172,6 +172,41 @@ def load_and_join_inputs(indicators_path: Path, regimes_path: Path) -> JoinedDat
     return JoinedDataset(frame=merged, x=x_sorted)
 
 
+def load_indicators_input(indicators_path: Path) -> JoinedDataset:
+    """Load and validate an indicators-only input for frozen apply.
+
+    Applies the same validation and deterministic ordering contract as the
+    fit-time join, without consuming regimes, labels, or risk scores.
+    """
+    indicators = _load_parquet(indicators_path, artifact_name="indicators input")
+    _require_columns(indicators, {"sample_id", "x"}, artifact_name="indicators input")
+
+    indicators = indicators.copy()
+    indicators["sample_id"] = indicators["sample_id"].astype(str)
+    _ensure_unique_sample_id(indicators, artifact_name="indicators input")
+    indicators = _sorted_by_sample_id(indicators)
+
+    x_matrix = _parse_x_column(indicators)
+
+    frame = pd.DataFrame(
+        {
+            "sample_id": indicators["sample_id"].to_numpy(),
+            "x": [[float(v) for v in row] for row in x_matrix.tolist()],
+        }
+    )
+
+    if "label" in indicators.columns:
+        frame["label"] = indicators["label"].astype(str).to_numpy()
+
+    for field in METADATA_FIELDS:
+        if field in indicators.columns:
+            frame[field] = indicators[field].to_numpy()
+
+    frame = deterministic_sort(frame)
+    x_sorted = _parse_x_column(frame)
+    return JoinedDataset(frame=frame, x=x_sorted)
+
+
 def _stable_bucket(sample_id: str, seed: int) -> float:
     token = f"{int(seed)}:{sample_id}".encode("utf-8")
     digest = hashlib.sha256(token).digest()
@@ -189,6 +224,53 @@ def deterministic_train_val_split(sample_ids: list[str], seed: int, train_frac: 
         raise TrainingError("deterministic split produced zero train samples")
     if val_idx.size == 0:
         raise TrainingError("deterministic split produced zero validation samples")
+
+    return train_idx, val_idx
+
+
+def resolve_split_unit(unit: str, columns: list[str] | pd.Index) -> str:
+    """Resolve a configured data_split.unit against available frame columns."""
+    unit = str(unit)
+    if unit not in ALLOWED_SPLIT_UNITS:
+        raise InputValidationError("data_split.unit must be one of: sample_id, sequence_id, auto")
+
+    available = set(str(col) for col in columns)
+    if unit == "auto":
+        return "sequence_id" if "sequence_id" in available else "sample_id"
+    if unit == "sequence_id" and "sequence_id" not in available:
+        raise InputValidationError("data_split.unit is 'sequence_id' but input has no sequence_id column")
+    return unit
+
+
+def deterministic_split_by_unit(
+    frame: pd.DataFrame,
+    seed: int,
+    train_frac: float,
+    unit: str,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Hash-based deterministic split keeping whole split units on one side.
+
+    With unit 'sample_id' this is byte-identical to deterministic_train_val_split.
+    With unit 'sequence_id' every row of a sequence is bucketed by the same
+    sha256(f"{seed}:{sequence_id}") hash, so sequences never straddle the split.
+    """
+    resolved = resolve_split_unit(unit=unit, columns=frame.columns)
+    if resolved == "sample_id":
+        return deterministic_train_val_split(
+            sample_ids=frame["sample_id"].astype(str).tolist(),
+            seed=seed,
+            train_frac=train_frac,
+        )
+
+    sequence_ids = frame["sequence_id"].astype(str).tolist()
+    buckets = np.asarray([_stable_bucket(sample_id=sid, seed=seed) for sid in sequence_ids], dtype=np.float64)
+    train_idx = np.where(buckets < float(train_frac))[0]
+    val_idx = np.where(buckets >= float(train_frac))[0]
+
+    if train_idx.size == 0:
+        raise TrainingError("deterministic sequence_id split produced zero train samples")
+    if val_idx.size == 0:
+        raise TrainingError("deterministic sequence_id split produced zero validation samples")
 
     return train_idx, val_idx
 

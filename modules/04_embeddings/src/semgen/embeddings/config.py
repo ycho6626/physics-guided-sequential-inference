@@ -17,6 +17,8 @@ from semgen.embeddings.errors import ConfigValidationError
 INDICATOR_DIM = 8
 FIXED_HIDDEN_DIMS = [32, 16]
 ALLOWED_METRIC_LOSSES = {"triplet", "contrastive"}
+ALLOWED_SPLIT_UNITS = ("sample_id", "sequence_id", "auto")
+DEFAULT_SPLIT_UNIT = "sample_id"
 
 
 def load_yaml_config(config_path: Path) -> dict[str, Any]:
@@ -130,6 +132,10 @@ def _validate_semantics(config: dict[str, Any]) -> None:
         raise ConfigValidationError("data_split.train_frac must satisfy 0 < train_frac < 1")
     if config["data_split"]["method"] != "hash":
         raise ConfigValidationError("data_split.method must be 'hash'")
+
+    split_unit = str(config["data_split"].get("unit", DEFAULT_SPLIT_UNIT))
+    if split_unit not in ALLOWED_SPLIT_UNITS:
+        raise ConfigValidationError("data_split.unit must be one of: sample_id, sequence_id, auto")
 
 
 def validate_config(config: dict[str, Any], schema: dict[str, Any]) -> dict[str, Any]:

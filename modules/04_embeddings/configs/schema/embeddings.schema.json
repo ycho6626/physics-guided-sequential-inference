@@ -156,6 +156,10 @@
           "type": "number",
           "exclusiveMinimum": 0,
           "exclusiveMaximum": 1
+        },
+        "unit": {
+          "type": "string",
+          "enum": ["sample_id", "sequence_id", "auto"]
         }
       }
     },

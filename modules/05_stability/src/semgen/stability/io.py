@@ -12,7 +12,7 @@ from typing import Any
 import yaml
 
 from semgen.stability.config import config_hash
-from semgen.stability.pipeline import StabilityArtifacts
+from semgen.stability.pipeline import StabilityApplyArtifacts, StabilityArtifacts
 
 
 def sha256_file(path: Path) -> str:
@@ -123,6 +123,56 @@ def write_outputs(
     }
 
     manifest_path = out_dir / "stability_manifest.json"
+    with manifest_path.open("w", encoding="utf-8") as handle:
+        json.dump(manifest, handle, sort_keys=True, indent=2)
+        handle.write("\n")
+
+    return manifest
+
+
+def write_apply_outputs(
+    *,
+    artifacts: StabilityApplyArtifacts,
+    out_dir: Path,
+    config: dict[str, Any],
+    config_path: Path,
+    module_root: Path,
+) -> dict[str, Any]:
+    """Write frozen-apply artifacts and the standardized apply manifest.
+
+    Apply writes `stability.parquet` + `stability_apply_manifest.json` only;
+    it never writes `hmm_model/` artifacts.
+    """
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    stability_path = out_dir / "stability.parquet"
+    artifacts.stability_df.to_parquet(stability_path, index=False, engine="pyarrow", compression="zstd")
+
+    artifact_hashes = {
+        str(stability_path.relative_to(out_dir)): sha256_file(stability_path),
+    }
+
+    input_path_value, input_hash_value = _input_path_and_hash(artifacts.input_paths)
+    model_path_value, model_hash_value = _input_path_and_hash(artifacts.model_paths)
+
+    cfg_hash = config_hash(config)
+    now = datetime.now(timezone.utc)
+    manifest = {
+        "module_name": "stability",
+        "schema_version": "module_manifest.v1",
+        "created_at": now.isoformat(),
+        "run_id": f"{now.strftime('%Y%m%dT%H%M%SZ')}_{cfg_hash[:8]}",
+        "config_path": str(config_path),
+        "config_hash": cfg_hash,
+        "input_path": input_path_value,
+        "input_hash": input_hash_value,
+        "model_path": model_path_value,
+        "model_hash": model_hash_value,
+        "code_revision": _detect_code_revision(module_root),
+        "artifacts": artifact_hashes,
+    }
+
+    manifest_path = out_dir / "stability_apply_manifest.json"
     with manifest_path.open("w", encoding="utf-8") as handle:
         json.dump(manifest, handle, sort_keys=True, indent=2)
         handle.write("\n")

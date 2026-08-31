@@ -19,8 +19,14 @@ Join rules are fail-closed:
 - Optional L2 normalization of `z`
 - Training-only classifier head
 - Total loss: weighted classification + metric loss (`triplet` or `contrastive`)
-- Deterministic hash-based train/val split by `sample_id`
+- Deterministic hash-based train/val split by `sample_id` (default) or by whole sequences via `data_split.unit`
 - Normalization stats fit on train split only and reused for val/inference
+
+### Split unit (`data_split.unit`)
+Optional config key, default `"sample_id"` (legacy behavior unchanged; the shipped YAML omits it):
+- `"sample_id"`: hash-split each row independently (legacy)
+- `"sequence_id"`: bucket whole sequences by `sha256(f"{seed}:{sequence_id}")` so no sequence straddles train/val; fails closed when the joined frame has no `sequence_id` column or either side is empty
+- `"auto"`: `sequence_id` when the joined frame has a `sequence_id` column, else `sample_id`
 
 ## CLI
 ```bash
@@ -32,6 +38,17 @@ semgen embeddings \
 ```
 
 `--out` is an output directory and is created when missing.
+
+### Frozen apply
+```bash
+semgen embeddings-apply \
+  --indicators runs/.../indicators.parquet \
+  --model runs/.../emb/embedding_model \
+  --config configs/embeddings.yaml \
+  --out runs/.../emb_apply
+```
+
+`embeddings-apply` runs no training: it loads the frozen `model.pt` + `normalization.json` (+ `model_meta.json`, all required in `--model`), validates them fail-closed against the config-built backbone (`embedding_weights.v1` / `embedding_normalization.v1`), and applies frozen normalization + backbone with the train-time deterministic torch runtime. It consumes only `indicators.parquet` (required: `sample_id`, `x`; unique `sample_id`; same deterministic sort contract as fit) — no regimes input and no labels are consumed.
 
 ## Outputs
 The command writes:
@@ -51,6 +68,10 @@ The command writes:
 
 Optional passthrough columns are included when `output.include_passthrough: true`.
 
+`embeddings-apply` writes:
+- `embeddings.parquet` with `sample_id`, `z`, `schema_version` (`embeddings.parquet.v1`), plus passthrough of `label`/`sequence_id`/`scenario_id`/`timestamp` when present in the input and `output.include_passthrough: true`; `regime_label` and `risk_score` are OMITTED in apply output
+- `embeddings_apply_manifest.json` following the same manifest conventions (hashes of the indicators input, the three model files, the output, and the code revision)
+
 ## Manifest Contract
 `embeddings_manifest.json` uses the standardized module-level schema:
 - `module_name`, `schema_version`, `created_at`, `run_id`
@@ -63,9 +84,10 @@ The manifest does not hash itself. `artifacts` is a sorted map of relative outpu
 
 ## Determinism
 Given identical input artifact bytes, config, and seed:
-- split assignment is deterministic (`sha256(f"{seed}:{sample_id}")`)
+- split assignment is deterministic (`sha256(f"{seed}:{sample_id}")`, or `sha256(f"{seed}:{sequence_id}")` when the split unit resolves to `sequence_id`)
 - training/inference are deterministic on CPU
 - outputs and artifact hashes are reproducible
+- `embeddings-apply` output depends only on the indicators input, the frozen model files, and the config
 
 ## Runtime Compatibility
 - Verified supported runtime path for this module in this repo is CPU PyTorch with NumPy 1.x.

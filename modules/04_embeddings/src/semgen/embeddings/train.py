@@ -9,7 +9,6 @@ from typing import Any
 
 import numpy as np
 import torch
-from torch import nn
 from torch.nn import functional as F
 
 from semgen.embeddings.errors import TrainingError
@@ -26,7 +25,8 @@ class TrainedEmbeddingModel:
     model_meta: dict[str, Any]
 
 
-def _set_deterministic_runtime(seed: int) -> None:
+def set_deterministic_runtime(seed: int) -> None:
+    """Seed all RNGs and force the deterministic torch execution used at train."""
     random.seed(int(seed))
     np.random.seed(int(seed))
     torch.manual_seed(int(seed))
@@ -186,7 +186,7 @@ def train_embedding_model(
     if not np.isfinite(x_normalized).all() or not np.isfinite(risk_scores).all():
         raise TrainingError("training inputs contain non-finite values")
 
-    _set_deterministic_runtime(int(config["training"]["seed"]))
+    set_deterministic_runtime(int(config["training"]["seed"]))
 
     backbone, spec = build_backbone_from_config(config)
     class_names = sorted(set(str(label) for label in regime_labels))
