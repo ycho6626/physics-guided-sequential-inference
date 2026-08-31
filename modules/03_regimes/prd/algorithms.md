@@ -24,14 +24,20 @@ Default:
 Weights W are fixed from config or estimated from training data
 and stored in regime artifacts.
 
-## 3) Optimal Transport geometry
-Compute OT distance between distributions:
+## 3) Optimal Transport geometry (diagnostic summary only)
+Record an OT separation summary between the class distributions:
 - W2 (2-Wasserstein) distance with ground metric d
-- Entropic regularization optional (Sinkhorn)
+- Entropic regularization optional (Sinkhorn); deterministic Gaussian-distribution W2
+  approximation fallback
 
-This yields:
-- a notion of separation between hazard and benign distributions,
-- transport plans useful for defining regime boundaries.
+The recorded W2 is a fit-time diagnostic of hazard/benign separation stored in the
+regime artifacts (`model.json:ot_geometry`, `boundaries.json:metadata.ot_w2`). It is
+**not operational**: no regime label, threshold, or risk score depends on it, and no
+transport plan is used in boundary construction (decision-invariance is pinned by a
+regression test). At the shipped default `entropic_reg`, a kernel with any row or column
+that has no representable mass is numerically unusable and fails into the explicit
+Gaussian-distribution W2 approximation path. The approximation is not valid entropic OT
+(see `findings/ot_decision_record.md` §1).
 
 ## 4) Regime boundary construction
 Define regions in indicator space:
@@ -40,10 +46,11 @@ Define regions in indicator space:
 - High-risk false-alarm region
 - Missed-detection risk region
 
-Boundaries may be defined by:
-- level sets of OT barycentric distance,
-- distance-to-manifold thresholds,
-- quantiles of class-conditional distances.
+The implemented construction is **quantiles of class-conditional distances**: thresholds
+are quantiles of the hazard-class risk distances under the configured ground metric,
+applied in order. Alternative OT-based constructions (level sets of OT barycentric
+distance; distance-to-manifold thresholds) are **not implemented**. Any future load-bearing
+OT construction requires a separately reviewed design; none is added or tuned here.
 
 The exact construction must be explicit and reproducible.
 

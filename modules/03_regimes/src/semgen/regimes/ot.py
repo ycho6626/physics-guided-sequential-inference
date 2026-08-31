@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import numpy as np
-from scipy.optimize import linear_sum_assignment
 
 from semgen.regimes.errors import OTConvergenceError, OTNumericalError
 
@@ -26,10 +25,18 @@ def sinkhorn_wasserstein2(
     a = np.full(n, 1.0 / n, dtype=np.float64)
     b = np.full(m, 1.0 / m, dtype=np.float64)
 
-    kernel = np.exp(-cost_sq / entropic_reg)
-    kernel = np.maximum(kernel, 1e-300)
+    with np.errstate(under="ignore"):
+        kernel = np.exp(-cost_sq / entropic_reg)
     if not np.isfinite(kernel).all():
         raise OTNumericalError("Sinkhorn kernel contains non-finite values")
+    empty_rows = np.flatnonzero(~np.any(kernel > 0.0, axis=1))
+    empty_columns = np.flatnonzero(~np.any(kernel > 0.0, axis=0))
+    if empty_rows.size or empty_columns.size:
+        raise OTNumericalError(
+            "Sinkhorn kernel is numerically unusable before flooring: "
+            f"{empty_rows.size} rows and {empty_columns.size} columns have no representable mass"
+        )
+    kernel = np.maximum(kernel, 1e-300)
 
     u = np.ones(n, dtype=np.float64)
     v = np.ones(m, dtype=np.float64)
@@ -75,38 +82,5 @@ def sinkhorn_wasserstein2(
         "iterations": int(iterations),
         "tol": float(tol),
         "max_iter": int(max_iter),
-    }
-    return w2, metadata
-
-
-def exact_assignment_wasserstein2(cost_sq: np.ndarray) -> tuple[float, dict[str, float | int | bool]]:
-    """Compute deterministic assignment-based OT approximation for entropic_reg=0."""
-    if cost_sq.ndim != 2 or cost_sq.shape[0] == 0 or cost_sq.shape[1] == 0:
-        raise OTNumericalError("cost_sq must be a non-empty 2D matrix")
-    if not np.isfinite(cost_sq).all():
-        raise OTNumericalError("cost_sq contains non-finite values")
-
-    n, m = cost_sq.shape
-    n_used = min(n, m)
-
-    row_idx = np.arange(n_used, dtype=int)
-    col_idx = np.arange(n_used, dtype=int)
-    sub_cost = cost_sq[row_idx][:, col_idx]
-
-    rows, cols = linear_sum_assignment(sub_cost)
-    mean_cost = float(np.mean(sub_cost[rows, cols]))
-    w2 = float(np.sqrt(max(mean_cost, 0.0)))
-    if not np.isfinite(w2):
-        raise OTNumericalError("assignment OT distance is non-finite")
-
-    metadata: dict[str, float | int | bool] = {
-        "converged": True,
-        "iterations": 1,
-        "tol": 0.0,
-        "max_iter": 1,
-        "subsample_strategy": "head",
-        "n_source_original": int(n),
-        "n_target_original": int(m),
-        "n_used": int(n_used),
     }
     return w2, metadata

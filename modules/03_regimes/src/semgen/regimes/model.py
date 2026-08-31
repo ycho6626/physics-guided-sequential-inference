@@ -43,6 +43,16 @@ class FittedRegimeModel:
     distance_to_boundary: np.ndarray
 
 
+@dataclass(frozen=True)
+class RegimeAssignments:
+    """Light container of per-sample assignment arrays for output construction."""
+
+    risk_distance: np.ndarray
+    regime_label: np.ndarray
+    risk_score: np.ndarray
+    distance_to_boundary: np.ndarray
+
+
 def _json_dumps(data: dict[str, Any]) -> str:
     return json.dumps(data, sort_keys=True, separators=(",", ":"))
 
@@ -139,7 +149,7 @@ def _sym_matrix_sqrt(matrix: np.ndarray, jitter: float = 1e-9) -> np.ndarray:
 
 
 def _gaussian_w2_fallback(x_hazard: np.ndarray, x_benign: np.ndarray, ctx: MetricContext) -> tuple[float, dict[str, Any]]:
-    """Compute deterministic Gaussian W2 fallback in weighted feature space."""
+    """Approximate each class as Gaussian and compute distribution-level W2."""
     z_hazard = x_hazard * ctx.sqrt_weights[None, :]
     z_benign = x_benign * ctx.sqrt_weights[None, :]
 
@@ -166,6 +176,7 @@ def _gaussian_w2_fallback(x_hazard: np.ndarray, x_benign: np.ndarray, ctx: Metri
         raise OTNumericalError("Gaussian fallback produced non-finite W2")
 
     return w2, {
+        "approximation": "gaussian_distribution_w2",
         "mean_term": mean_term,
         "trace_term": trace_term,
         "jitter": 1e-9,
@@ -323,13 +334,25 @@ def compute_risk_distance_from_model(x: np.ndarray, model_artifact: dict[str, An
     return np.sqrt(np.clip(d2, 0.0, None))
 
 
+def _normalize_risk_score_block(risk_score_block: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "scale": str(risk_score_block["scale"]),
+        "clamp": [float(risk_score_block["clamp"][0]), float(risk_score_block["clamp"][1])],
+    }
+
+
 def apply_regime_model(
     x: np.ndarray,
     model_artifact: dict[str, Any],
     boundaries_artifact: dict[str, Any],
     config: dict[str, Any],
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """Apply fitted model+boundaries to new points without refitting thresholds."""
+    """Apply fitted model+boundaries to new points without refitting thresholds.
+
+    Risk-score scale/clamp are taken from the serialized boundaries artifact
+    (fit-time settings), never from the live config. A live config whose
+    risk_score block diverges from the serialized one fails closed.
+    """
     risk_distance = compute_risk_distance_from_model(x, model_artifact)
     labels_cfg = [str(v) for v in boundaries_artifact["labels"]]
     thresholds = {
@@ -337,11 +360,20 @@ def apply_regime_model(
         "ambiguous": float(boundaries_artifact["thresholds"]["ambiguous"]),
         "degraded": float(boundaries_artifact["thresholds"]["degraded"]),
     }
+
+    frozen_risk_cfg = _normalize_risk_score_block(boundaries_artifact["risk_score"])
+    live_risk_cfg = _normalize_risk_score_block(config["risk_score"])
+    if live_risk_cfg != frozen_risk_cfg:
+        raise InputValidationError(
+            "risk_score settings in live config diverge from serialized boundaries: "
+            "frozen apply uses fit-time risk-score settings; mismatch is an operator error"
+        )
+
     regime_label, risk_score, distance_to_boundary = _assign_from_risk_distance(
         risk_distance=risk_distance,
         labels_cfg=labels_cfg,
         thresholds=thresholds,
-        risk_cfg=config["risk_score"],
+        risk_cfg=frozen_risk_cfg,
     )
     return regime_label, risk_score, distance_to_boundary, risk_distance
 
@@ -527,7 +559,7 @@ def fit_and_assign_regimes(df: pd.DataFrame, config: dict[str, Any]) -> FittedRe
 
 def build_regimes_dataframe(
     df: pd.DataFrame,
-    fitted: FittedRegimeModel,
+    fitted: FittedRegimeModel | RegimeAssignments,
     include_debug: bool,
 ) -> pd.DataFrame:
     """Build regime_scores.parquet dataframe with required and optional fields."""

@@ -8,8 +8,8 @@ from pathlib import Path
 
 from semgen.regimes.config import ConfigValidationError, load_and_validate_config
 from semgen.regimes.errors import InputValidationError
-from semgen.regimes.io import write_outputs
-from semgen.regimes.pipeline import run_regime_pipeline
+from semgen.regimes.io import write_apply_outputs, write_outputs
+from semgen.regimes.pipeline import run_regime_apply_pipeline, run_regime_pipeline
 
 
 def _module_root() -> Path:
@@ -38,6 +38,25 @@ def run_regimes(input_path: Path, config_path: Path, out_dir: Path) -> int:
     return 0
 
 
+def run_regimes_apply(input_path: Path, model_dir: Path, config_path: Path, out_dir: Path) -> int:
+    """Execute frozen regimes apply command (no refit, no quantiles, no OT)."""
+    config = load_and_validate_config(config_path, _schema_path())
+    artifacts = run_regime_apply_pipeline(input_path=input_path, model_dir=model_dir, config=config)
+
+    write_apply_outputs(
+        artifacts=artifacts,
+        out_dir=out_dir,
+        input_path=input_path,
+        model_dir=model_dir,
+        config=config,
+        config_path=config_path,
+        module_root=_module_root(),
+    )
+
+    print(f"n_samples={artifacts.n_samples} out_dir={out_dir}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Build CLI argument parser."""
     parser = argparse.ArgumentParser(prog="semgen", description="Semgen risk regimes tools")
@@ -47,6 +66,18 @@ def build_parser() -> argparse.ArgumentParser:
     regimes_parser.add_argument("--in", dest="input_path", required=True, type=Path, help="Input indicators parquet")
     regimes_parser.add_argument("--config", required=True, type=Path, help="Regimes config YAML")
     regimes_parser.add_argument("--out", dest="out_dir", required=True, type=Path, help="Output directory")
+
+    apply_parser = subparsers.add_parser("regimes-apply", help="Apply a frozen Module 03 regime model")
+    apply_parser.add_argument("--in", dest="input_path", required=True, type=Path, help="Input indicators parquet")
+    apply_parser.add_argument(
+        "--model",
+        dest="model_dir",
+        required=True,
+        type=Path,
+        help="Fitted regime_model directory containing model.json and boundaries.json",
+    )
+    apply_parser.add_argument("--config", required=True, type=Path, help="Regimes config YAML")
+    apply_parser.add_argument("--out", dest="out_dir", required=True, type=Path, help="Output directory")
 
     return parser
 
@@ -60,6 +91,13 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "regimes":
             return run_regimes(
                 input_path=args.input_path,
+                config_path=args.config,
+                out_dir=args.out_dir,
+            )
+        if args.command == "regimes-apply":
+            return run_regimes_apply(
+                input_path=args.input_path,
+                model_dir=args.model_dir,
                 config_path=args.config,
                 out_dir=args.out_dir,
             )

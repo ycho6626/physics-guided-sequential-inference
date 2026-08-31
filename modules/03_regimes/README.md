@@ -13,10 +13,19 @@ The module assigns one label per sample:
 ## Hazard-Referenced Geometry
 Distances and regime thresholds are defined relative to the hazard reference distribution. Regime boundary quantiles are computed from hazard-class risk-distance values, then applied in order to assign labels and scores.
 
-## OT / Wasserstein Role
-The model records Wasserstein-2 (`W2`) geometry between hazard and benign distributions as an auditable transport summary:
-- `entropic_reg > 0`: deterministic Sinkhorn-regularized OT
-- Sinkhorn convergence/numerical failure: deterministic Gaussian W2 fallback summary (non-blocking for regime assignment)
+## OT / Wasserstein Role (fit-time diagnostic only)
+The model records a Wasserstein-2 (`W2`) summary between hazard and benign distributions as a
+fit-time diagnostic in `model.json:ot_geometry` and `boundaries.json:metadata.ot_w2`. It is **not
+operational**: no regime label, threshold, or risk score depends on it (pinned by the regression
+test `test_w2_counterfactual_decision_invariance` in `experiments/tests/`), and the frozen-apply
+path computes no OT at all.
+- `entropic_reg > 0`: Sinkhorn-regularized OT is attempted. **Caution:** at the shipped default
+  (`entropic_reg: 0.01`) the kernel underflows on realistic Mahalanobis cost scales, so the
+  unusable kernel is rejected before flooring and recorded through the fallback path.
+- Sinkhorn convergence/numerical failure: a deterministic Gaussian-distribution W2 approximation
+  is recorded with `status: "fallback"` (non-blocking for regime assignment). This approximation
+  is a rough separation summary, not valid entropic OT.
+Disposition: `findings/ot_decision_record.md`.
 
 ## Configuration and Validation
 - Config file example: `configs/regimes.yaml`
@@ -65,7 +74,11 @@ runs/2026-xx/regimes/
 
 ## CLI Usage
 ```bash
+# Fit (train data): fits the model and writes regime_model/
 semgen regimes --in runs/.../indicators.parquet --config configs/regimes.yaml --out runs/.../regimes
+
+# Frozen apply: reuses a fitted regime_model/ without refitting
+semgen regimes-apply --in runs/.../indicators.parquet --model runs/.../regimes/regime_model --config configs/regimes.yaml --out runs/.../regimes_apply
 ```
 
 Notes:
@@ -74,6 +87,13 @@ Notes:
   - `sequence_id`, `timestamp`, `sample_id` when sequence/timestamp metadata exists
   - `sequence_id`, `sample_id` when only sequence metadata exists
   - otherwise `sample_id`
+
+### Frozen Apply (`regimes-apply`)
+- `--model` points at a fitted `regime_model/` directory; `model.json` must be `regime_model.v1` and `boundaries.json` must be `regimes_boundaries.v1` (fail-closed otherwise).
+- No refit: thresholds, quantiles, and OT geometry are never recomputed in this path.
+- Input contract matches fit, except `label` is optional and never used for computation.
+- Risk-score scale/clamp come from the serialized `boundaries.json` (fit-time settings); a live config whose `risk_score` block diverges fails closed.
+- Outputs: `regime_scores.parquet` (same schema and sorting as fit), `config_snapshot.yaml`, and `regimes_apply_manifest.json` (`regimes_apply_manifest.v1` with input/model/boundaries/output hashes, `n_samples`, and `code_revision`).
 
 ## Manifest Semantics
 `regimes_manifest.json` includes run metadata such as:
