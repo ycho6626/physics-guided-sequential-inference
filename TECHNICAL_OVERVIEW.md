@@ -44,13 +44,20 @@ The simulator exposes latent signal, nuisance, and noise separately. This permit
 
 The feature layer computes fixed statistics before learned representation. It supplies interpretable baselines and allows information loss to be localized between measurement, feature extraction, and downstream inference.
 
-### Optimal-transport regimes
+### Regime scoring and transport diagnostics
 
-Regime scores compare empirical indicator distributions using configured ground metrics. The resulting geometry represents reliability state rather than class identity and remains inspectable through distances and boundary diagnostics.
+Regime labels, boundaries, and scores come from hazard-referenced class-conditional distances and
+their fitted quantiles. A Sinkhorn/Gaussian Wasserstein calculation is retained as a fit-time
+distribution diagnostic, but it does not determine labels, thresholds, scores, or downstream
+actions. Numerically unusable Sinkhorn kernels fail into an explicitly labelled Gaussian fallback.
 
 ### Learned representation
 
-The embedding stage compresses indicator/regime information and reports reconstruction and metric-learning diagnostics. It is evaluated against fixed-feature and disabled-embedding ablations.
+The embedding stage compresses indicator/regime information and reports reconstruction and
+metric-learning diagnostics. Its serialized architecture, normalization, and weights are applied
+unchanged to held-out sequences. The implementation is operational; a corrected exploratory
+ablation did not establish that the learned coordinates improve scientific performance, so no
+representation-learning positive is claimed.
 
 ### Hidden Markov model
 
@@ -64,7 +71,11 @@ The policy applies hysteresis, dwell-time, cooldown, and confirmability rules to
 
 ### Leakage control
 
-Complete sequences are assigned to train, validation, or test by a stable hash. Calibration, model selection, and feasibility ranking cannot inspect the test split.
+Complete sequences are assigned to train, validation, or test by a stable hash before learned
+stages run. Modules 03–05 fit on outer-train only and use frozen-apply interfaces on held-out
+sequences. Regression tests perturb, relabel, and remove held-out data and require fit-artifact
+hashes to remain unchanged. The old fit-before-split runner is explicit historical reproduction
+only.
 
 ### Counterfactual checks
 
@@ -96,4 +107,6 @@ The comparison localizes the distinction between ensemble identifiability and pe
 - The primary pipeline is simulation-first.
 - The case study is conditional on the stated forward model and nuisance prior.
 - The detection result bounds the evaluated detector family, not all possible estimators.
+- The architecture audit is scoped to the original demonstrator generator and does not alter the separate case-study measurement-limit claims.
+- The corrected representation battery remains `INCONCLUSIVE / UNDERPOWERED`; descriptive failure patterns are not confirmatory results.
 - Policy outputs are decision-support records, not physical actuation.

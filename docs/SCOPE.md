@@ -9,18 +9,23 @@ This repository is a curated, standalone technical release of a larger research 
 - deterministic experiment orchestration;
 - baselines, ablations, calibration, separability diagnostics, and artifact manifests;
 - selected calibrated multi-frame identity and detection probes;
+- the implementation-audit disposition for transport, representation learning, and leakage;
 - technical documentation and synthetic fixtures.
 
 ## Intentionally Omitted
 
 - licensed or locally acquired spectral datasets;
 - generated run directories and large intermediate artifacts;
+- exploratory architecture-battery outputs that did not meet their evaluability floor;
 - the long chronological findings/review log;
 - unfinished held-out prevalence studies;
 - obsolete experimental branches and superseded probes;
 - manuscript and submission-specific source files.
 
-The omissions keep superseded exploratory work separate from the current implementation. They do not remove dependencies required by the pipeline or its tests.
+The omissions keep superseded or non-citable exploratory work separate from the current
+implementation. The retained validation note records the scientific disposition without presenting
+those outputs as confirmatory evidence. The omissions do not remove dependencies required by the
+pipeline or its tests.
 
 ## Provenance
 

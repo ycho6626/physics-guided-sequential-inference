@@ -1,6 +1,6 @@
 """Frozen analysis for the corrected ablation grid (paired cluster bootstrap, geometry).
 
-Everything here is pre-declared in findings/architecture_validity_rerun.md A.3:
+The analysis contract and its scientific disposition are summarized in docs/VALIDATION.md:
 contrasts, B=1000, rng seed 20260829, percentile 95% intervals, cluster unit =
 test sequence, primary metric FCR with MCR as the safety constraint.
 """

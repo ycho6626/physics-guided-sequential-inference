@@ -23,7 +23,7 @@ def main() -> int:
     parser.add_argument(
         "--plan",
         type=Path,
-        default=EXPERIMENTS_ROOT.parent / "findings" / "architecture_validity_rerun.md",
+        default=EXPERIMENTS_ROOT.parent / "docs" / "VALIDATION.md",
     )
     parser.add_argument("--analyze-only", action="store_true", help="Skip the grid; only (re)run analysis.")
     args = parser.parse_args()

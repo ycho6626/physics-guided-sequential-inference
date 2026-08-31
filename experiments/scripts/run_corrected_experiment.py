@@ -22,7 +22,7 @@ def main() -> int:
     parser.add_argument(
         "--plan",
         type=Path,
-        default=EXPERIMENTS_ROOT.parent / "findings" / "architecture_validity_rerun.md",
+        default=EXPERIMENTS_ROOT.parent / "docs" / "VALIDATION.md",
         help="Frozen plan document; its SHA256 is embedded in the run manifest.",
     )
     parser.add_argument("--arm-name", type=str, default="default")

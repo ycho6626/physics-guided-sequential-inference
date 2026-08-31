@@ -25,7 +25,7 @@ path computes no OT at all.
 - Sinkhorn convergence/numerical failure: a deterministic Gaussian-distribution W2 approximation
   is recorded with `status: "fallback"` (non-blocking for regime assignment). This approximation
   is a rough separation summary, not valid entropic OT.
-Disposition: `findings/ot_decision_record.md`.
+Disposition: `../../docs/VALIDATION.md`.
 
 ## Configuration and Validation
 - Config file example: `configs/regimes.yaml`

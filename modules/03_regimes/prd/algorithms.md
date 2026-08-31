@@ -37,7 +37,7 @@ transport plan is used in boundary construction (decision-invariance is pinned b
 regression test). At the shipped default `entropic_reg`, a kernel with any row or column
 that has no representable mass is numerically unusable and fails into the explicit
 Gaussian-distribution W2 approximation path. The approximation is not valid entropic OT
-(see `findings/ot_decision_record.md` §1).
+(see `../../../docs/VALIDATION.md`).
 
 ## 4) Regime boundary construction
 Define regions in indicator space:

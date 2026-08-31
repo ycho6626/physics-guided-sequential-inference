@@ -1,6 +1,6 @@
 """Leakage and OT-honesty tests for the corrected fit/frozen-apply pipeline.
 
-These are the executable checks required by findings/architecture_validity_rerun.md A.1:
+These are the executable checks summarized in docs/VALIDATION.md:
 fitted artifacts must be pure functions of outer-train data; frozen apply must be
 row/sequence-local; the val evaluation path must not read test data; and the retained
 OT diagnostic must remain decision-inert and fail closed on a numerically unusable
@@ -461,7 +461,7 @@ def test_no_test_chain_fit_hashes_match_base(base_chain: dict, tmp_path_factory:
 
 
 # ---------------------------------------------------------------------------
-# OT honesty tests (ot_decision_record.md §5)
+# OT honesty tests (docs/VALIDATION.md)
 # ---------------------------------------------------------------------------
 
 

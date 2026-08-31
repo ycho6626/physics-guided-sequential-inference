@@ -41,7 +41,7 @@ Directory containing:
   - hazard reference parameters and an OT geometry summary — a fit-time diagnostic only;
     numerically unusable Sinkhorn kernels fail closed into a Gaussian-distribution W2
     approximation with `status: "fallback"`. The approximation is not valid entropic OT
-    (see `findings/ot_decision_record.md` §1)
+    (see `../../../docs/VALIDATION.md`)
 - `boundaries.json` with:
   - `schema_version`, regime labels, boundary quantiles, and fitted thresholds
   - risk-score settings and boundary metadata (`indicator_order`, ground metric type, OT W2 summary)

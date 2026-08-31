@@ -1,7 +1,7 @@
 """Frozen isolated ablation grid over the corrected fit/frozen-apply pipeline.
 
 Arms, seeds, metrics, and the decision rule are frozen in
-findings/architecture_validity_rerun.md Part A (A.3) BEFORE any result is read.
+the audited architecture design summarized in docs/VALIDATION.md BEFORE any result is read.
 Per (seed, scenario) the simulated data, outer split, and the Module-03 fit are
 computed once and shared by every arm; only Modules 04/05 vary by arm.
 """
@@ -34,7 +34,7 @@ from experiment_runner.pipeline import (
     repo_root,
 )
 
-# Frozen design (findings/architecture_validity_rerun.md A.3). Do not edit after freeze.
+# Audited design summarized in docs/VALIDATION.md. Do not edit after freeze.
 SEEDS = (123, 20260829, 424242)
 
 ARMS: dict[str, dict[str, Any]] = {

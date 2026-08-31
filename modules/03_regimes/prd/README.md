@@ -18,7 +18,7 @@ This module provides:
 - Define regime boundaries by hazard-referenced class-conditional distance quantiles
   (the implemented construction from `algorithms.md` §4); record an Optimal Transport
   (OT) W2 summary as a fit-time diagnostic only — no regime label, threshold, or risk
-  score depends on it (see `findings/ot_decision_record.md`).
+  score depends on it (see `../../../docs/VALIDATION.md`).
 - Assign each sample a regime label and continuous risk score.
 - Emit regime artifacts that are reproducible and auditable.
 

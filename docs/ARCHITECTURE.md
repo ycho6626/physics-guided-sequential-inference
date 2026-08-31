@@ -12,20 +12,23 @@ For observations `y_t = F(z_t, η_t; θ) + ε_t`, the pipeline estimates reliabi
 |---|---|---|---|
 | 1. Simulator | physical priors + seed | Beer–Lambert-style forward model, nuisance and noise | spectra + latent variables |
 | 2. Indicators | spectra | fixed interpretable features | indicator vectors |
-| 3. Regimes | indicator vectors | optimal-transport regime scoring | regime label + risk score |
-| 4. Embeddings | indicators/regimes | compact learned representation | embedding + reconstruction diagnostics |
+| 3. Regimes | indicator vectors | distance-quantile scoring + transport diagnostic | regime label + risk score |
+| 4. Embeddings | indicators/regimes | train-fitted representation with frozen apply | embedding + reconstruction diagnostics |
 | 5. Stability | ordered observations | HMM and persistence estimation | state probabilities + duration estimates |
 | 6. Policy | risk and stability | deterministic rules | `HOLD`, `RESCAN`, or `CONFIRM` + reason codes |
 | 7. Reports | structured decisions | schema validation + templates | decision and review summaries |
 
-The experiment runner invokes each module through its public CLI with a generated configuration snapshot. It does not import private state across module boundaries.
+The corrected experiment runner forms the outer split first, invokes each fit stage through its
+public CLI on outer-train data, and invokes frozen-apply CLIs on held-out splits. It does not import
+private state across module boundaries. The historical runner is isolated behind an explicit
+leaky-reproduction flag.
 
 ## Evaluation Plane
 
 The pipeline's evaluation layer is intentionally separate from model execution:
 
 - **Split policy:** stable SHA-256 buckets assign a sample or complete sequence to train, validation, or test.
-- **Leakage check:** a sequence cannot appear in multiple splits.
+- **Leakage checks:** a sequence cannot appear in multiple splits, and fit artifacts must be invariant to held-out perturbation, relabelling, and removal.
 - **Baselines:** naive classification, hysteresis, n-of-m, CUSUM/EWMA, and an unstructured HMM.
 - **Ablations:** remove regime, embedding, temporal, or policy components without changing the data split.
 - **Stress sets:** apply flicker and degradation scenarios with explicit severity.

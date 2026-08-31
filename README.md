@@ -20,8 +20,8 @@ where `z_t` is the latent state of interest, `η_t` contains structured nuisance
 |---|---|---|
 | Forward model | Beer–Lambert-style simulation with explicit nuisance and noise | spectra and latent truth |
 | Feature map | fixed interpretable indicators | low-dimensional observations |
-| Regime geometry | optimal-transport distances and risk regions | regime scores and labels |
-| Representation | compact metric-aware embedding | latent coordinates and reconstruction diagnostics |
+| Regime scoring | class-conditional distances and quantile boundaries; transport diagnostic | regime scores, labels, and fit diagnostics |
+| Representation | train-fitted embedding with frozen held-out apply | latent coordinates and reconstruction diagnostics |
 | State estimation | constrained hidden Markov model | filtered state probabilities and persistence |
 | Decision | deterministic hysteresis and evidence rules | `HOLD`, `RESCAN`, `CONFIRM` plus reason codes |
 | Evaluation | baselines, ablations, stress tests, bootstrap intervals | fail-closed acceptance records |
@@ -31,13 +31,26 @@ Modules communicate through validated JSON, Parquet, and NPZ artifacts. They do 
 ## Statistical Contract
 
 - Sequence-level SHA-256 partitioning prevents observations from the same trajectory crossing splits.
-- Model fitting and threshold selection use train/validation data only; test artifacts are read after selection is frozen.
+- The primary experiment runner creates the outer split before fitting Modules 03–05 and applies frozen artifacts to validation/test data.
+- The historical fit-before-split runner is retained only behind an explicit opt-in and is not valid for new evaluations.
 - Baselines and ablations reuse the same split and configuration provenance.
 - Acceptance records distinguish `pass`, `fail`, and `unevaluable`; missing support cannot become a pass.
 - Oracle calculations are ceiling diagnostics and are excluded from realizable verdicts.
 - Separability checks run upstream of architecture comparisons to distinguish measurement failure from estimator failure.
 
 See [`TECHNICAL_OVERVIEW.md`](TECHNICAL_OVERVIEW.md) and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the estimands, algorithms, and dataflow.
+
+## Architecture Validation
+
+An implementation audit found that the original transport value was diagnostic rather than
+decision-bearing, and that the original experiment runner fit learned stages before creating the
+outer split. The current implementation states the regime score directly, rejects unusable
+Sinkhorn computations, and enforces fit/frozen-apply boundaries through regression tests.
+
+The representation learner remains implemented, but its scientific utility is not established.
+The corrected exploratory battery was formally `INCONCLUSIVE / UNDERPOWERED`; its never-confirm
+pattern is diagnostic evidence, not a citable architecture result. See
+[`docs/VALIDATION.md`](docs/VALIDATION.md).
 
 ## Case Study
 
@@ -50,12 +63,14 @@ These are different estimands and are reported separately. The result is not con
 
 ## Inspect the Implementation
 
-1. Pipeline orchestration: [`experiments/src/experiment_runner/pipeline.py`](experiments/src/experiment_runner/pipeline.py)
+1. Split-before-fit orchestration: [`experiments/src/experiment_runner/corrected.py`](experiments/src/experiment_runner/corrected.py)
 2. Deterministic data partitioning: [`experiments/src/experiment_runner/dataset.py`](experiments/src/experiment_runner/dataset.py)
-3. Fail-closed criteria: [`experiments/src/experiment_runner/acceptance.py`](experiments/src/experiment_runner/acceptance.py)
-4. Separability diagnostics: [`experiments/src/experiment_runner/separability.py`](experiments/src/experiment_runner/separability.py)
-5. Calibrated recovery probe: [`experiments/src/experiment_runner/redesign/calibrated_instrument_benchmark.py`](experiments/src/experiment_runner/redesign/calibrated_instrument_benchmark.py)
-6. Detection ceiling probe: [`experiments/src/experiment_runner/redesign/calibrated_detection_probe.py`](experiments/src/experiment_runner/redesign/calibrated_detection_probe.py)
+3. Frozen regime application: [`modules/03_regimes/src/semgen/regimes/pipeline.py`](modules/03_regimes/src/semgen/regimes/pipeline.py)
+4. Frozen embedding application: [`modules/04_embeddings/src/semgen/embeddings/pipeline.py`](modules/04_embeddings/src/semgen/embeddings/pipeline.py)
+5. Fail-closed criteria: [`experiments/src/experiment_runner/acceptance.py`](experiments/src/experiment_runner/acceptance.py)
+6. Separability diagnostics: [`experiments/src/experiment_runner/separability.py`](experiments/src/experiment_runner/separability.py)
+7. Calibrated recovery probe: [`experiments/src/experiment_runner/redesign/calibrated_instrument_benchmark.py`](experiments/src/experiment_runner/redesign/calibrated_instrument_benchmark.py)
+8. Detection ceiling probe: [`experiments/src/experiment_runner/redesign/calibrated_detection_probe.py`](experiments/src/experiment_runner/redesign/calibrated_detection_probe.py)
 
 ## Run
 
@@ -66,7 +81,8 @@ Requirements: Python 3.11 or 3.12 and a Unix-like shell.
 ./scripts/run_demo.sh
 ```
 
-The demo writes metrics, configuration snapshots, split assignments, figures, logs, and manifests to `artifacts/demo/`.
+The demo writes corrected metrics, configuration snapshots, split assignments, learned artifacts,
+logs, and manifests to `artifacts/demo/`.
 
 Run all retained tests:
 
@@ -80,14 +96,14 @@ Run all retained tests:
 |---|---|
 | `modules/01_simulator` | stochastic physical forward model |
 | `modules/02_indicators` | deterministic indicator extraction |
-| `modules/03_regimes` | optimal-transport regime geometry |
-| `modules/04_embeddings` | learned representation and diagnostics |
+| `modules/03_regimes` | distance-quantile regime scoring and transport diagnostics |
+| `modules/04_embeddings` | learned representation with frozen apply and diagnostics |
 | `modules/05_stability` | HMM state inference and persistence |
 | `modules/06_policies` | reason-coded sequential decisions |
 | `modules/07_reports` | schema-validated report generation |
 | `experiments` | orchestration, calibration, baselines, ablations, and probes |
 | `prd` | executable requirements and acceptance criteria |
-| `docs` | architecture, case study, and repository boundary |
+| `docs` | architecture, validation, case study, and repository boundary |
 
 ## Boundary
 

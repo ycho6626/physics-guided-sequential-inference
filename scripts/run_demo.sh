@@ -12,8 +12,9 @@ fi
 cd "$ROOT"
 rm -rf artifacts/demo
 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
-  "$PYTHON" experiments/scripts/run_experiment.py \
+  "$PYTHON" experiments/scripts/run_corrected_experiment.py \
   --config experiments/configs/nominal.yaml \
+  --plan "$ROOT/docs/VALIDATION.md" \
   --out "$ROOT/artifacts/demo"
 
 echo "Demo bundle: $ROOT/artifacts/demo"

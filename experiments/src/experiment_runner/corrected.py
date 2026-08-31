@@ -1,11 +1,11 @@
 """Corrected fit/frozen-apply experiment pipeline (outer split before any learned fit).
 
-This runner exists to close the leakage acknowledged in findings/benchmark_redesign.md
+This runner exists to close the fit-before-split leakage recorded in docs/VALIDATION.md
 (fit before split at pipeline.py:417): the outer train/val/test split is created from
 indicators.parquet immediately after simulation + indicator extraction, Modules 03-05 are
 fitted on outer-train only via their module CLIs, and held-out splits are produced by the
 frozen-apply CLIs (regimes-apply / embeddings-apply / stability-apply). Module 06 stays a
-deterministic per-split application. See findings/architecture_validity_rerun.md Part A.
+deterministic per-split application. See docs/VALIDATION.md.
 """
 
 from __future__ import annotations
