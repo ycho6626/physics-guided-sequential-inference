@@ -64,3 +64,13 @@ The simulator must fail closed on invalid configs:
 - unknown `agent_id` values
 - invalid wavelength grid (non-monotone, too short)
 - illegal prior ranges (min > max, negative concentration where disallowed)
+
+## Optional episode truth
+
+When `scenarios.hazard_episode.enabled` is true, `latent_json.hazard_active_t` is a boolean
+frame truth. `latent_json.scenario` adds `hazard_episode` (whether selected), `episode_onset`,
+and `episode_duration` (null for unselected sequences). Mixture weights reflect actual frame
+absorption and can be zero off-episode; the original sequence label stays unchanged. These
+fields are privileged supervision/evaluation metadata, never detector input channels. When
+disabled, no new latent fields are emitted. The constant-mixture E1 frontier parser is not
+compatible with this episode output and remains primary-only.

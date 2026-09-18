@@ -124,6 +124,8 @@ Apply never writes `hmm_model/` artifacts.
 - `sum(p_state) == 1` within tolerance.
 - `p_confirmable == sum_{s in confirmable_set} p_state[s]`.
 - persistence estimates are nonnegative and finite.
+- the confirmable transition submatrix must have spectral radius below one;
+  otherwise finite persistence is undefined and inference fails closed.
 - outputs are deterministic given model + inputs.
 - apply is sequence-local: a sequence's outputs depend only on that sequence's
   rows and the frozen model (never on the rest of the applied set).
@@ -132,6 +134,7 @@ Apply never writes `hmm_model/` artifacts.
 - Missing sequence_id or timestamps.
 - Non-monotone time ordering within sequence (unless config allows sorting).
 - Mismatch between configured K and model parameter shapes.
+- A non-transient confirmable transition submatrix with no finite expected exit.
 - Unknown regime labels in input.
 - Apply: config disagreeing with the frozen model (states, observation mode,
   continuous field, `dt_seconds`, or `include_smoothing`), invalid/incomplete

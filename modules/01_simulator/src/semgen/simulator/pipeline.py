@@ -37,6 +37,7 @@ def _json_dumps(data: dict[str, Any]) -> str:
 def _latent_payload(spec: SampleSpec) -> dict[str, Any]:
     """Build the canonical latent payload to persist in outputs."""
     return {
+        **({"hazard_active_t": spec.latents["hazard_active_t"]} if "hazard_active_t" in spec.latents else {}),
         "components": spec.components,
         "weights": spec.weights,
         "concentration": spec.latents["concentration"],

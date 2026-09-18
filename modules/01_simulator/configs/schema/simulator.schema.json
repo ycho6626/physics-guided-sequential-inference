@@ -260,6 +260,10 @@
       "additionalProperties": false,
       "required": ["flicker"],
       "properties": {
+        "hazard_episode": {
+          "type": "object", "additionalProperties": false, "required": ["enabled"],
+          "properties": {"enabled": {"type": "boolean"}}
+        },
         "flicker": {
           "type": "object",
           "additionalProperties": false,

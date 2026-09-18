@@ -113,6 +113,10 @@ Then expected time-to-exit vector is:
 t = (I - Q)^(-1) 1
 where 1 is a vector of ones.
 
+This quantity is finite only when the confirmable subchain is transient
+(`spectral_radius(Q) < 1`). A closed confirmable class has infinite expected
+exit time and must fail closed; a pseudoinverse must not turn it into zero.
+
 If dt_seconds is known, convert steps → seconds.
 
 This is a key output: **alarm persistence estimate**.

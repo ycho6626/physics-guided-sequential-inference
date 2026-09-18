@@ -27,12 +27,19 @@ def expected_exit_steps(transition: np.ndarray, confirmable_indices: list[int]) 
     eye = np.eye(q.shape[0], dtype=np.float64)
     ones = np.ones(q.shape[0], dtype=np.float64)
 
+    spectral_radius = float(np.max(np.abs(np.linalg.eigvals(q))))
+    if not np.isfinite(spectral_radius) or spectral_radius >= 1.0:
+        raise ModelValidationError(
+            "confirmable transition submatrix has no finite expected exit time"
+        )
+
     system = eye - q
     try:
         t = np.linalg.solve(system, ones)
-    except np.linalg.LinAlgError:
-        # Deterministic pseudoinverse fallback for near-singular but recoverable matrices.
-        t = np.linalg.pinv(system, rcond=1e-12) @ ones
+    except np.linalg.LinAlgError as exc:
+        raise ModelValidationError(
+            "confirmable transition submatrix has no finite solvable expected exit time"
+        ) from exc
 
     if not np.isfinite(t).all():
         raise ModelValidationError("persistence computation produced non-finite expected exit times")

@@ -172,6 +172,11 @@ def validate_config(config: dict[str, Any], schema: dict[str, Any]) -> dict[str,
     _validate_agents(validated)
     _validate_priors(validated)
     _validate_sampling(validated)
+    if validated["scenarios"].get("hazard_episode", {}).get("enabled", False):
+        if (validated["sampling"]["mode"] != "sequence"
+                or validated["sampling"]["sequence_length"] != 10
+                or validated["sampling"]["dt_seconds"] != 1):
+            raise ConfigValidationError("hazard_episode requires ten frames at timestamps 0..9")
     _validate_mixtures(validated)
     _validate_labeling(validated)
     return validated

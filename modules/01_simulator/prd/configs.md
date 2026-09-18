@@ -115,3 +115,14 @@ labeling:
 - Absorption profiles can be replaced with real library curves later; Phase-1 uses documented synthetic shapes.
 - Sequence mode is required to support downstream alarm stability tests.
 - Config must be validated; unknown keys should error (fail-closed).
+
+## Opt-in hazard episodes
+
+`scenarios.hazard_episode: {enabled: true}` is supported only for ten-frame sequences with
+`dt_seconds: 1`. Absence of this optional object means disabled; validation does not insert it
+or change legacy config hashes. Explicit `enabled: false` also preserves generated outputs.
+For each hazard sequence, an independent Bernoulli(1/2) draw selects an episode. Its onset is
+uniform in 1..6 and duration is uniform in 3..(10−onset), inclusive. Hazard weights are zero
+outside the active interval, with no renormalization and no changes to benign weights or the
+sequence label. Episode draws use NumPy default_rng with the unsigned big-endian first eight
+SHA256 bytes of `<simulator_seed>:hazard_episode`, separate from latent/noise RNG streams.

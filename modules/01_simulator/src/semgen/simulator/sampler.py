@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 from dataclasses import dataclass
 from typing import Any
 
@@ -214,6 +215,11 @@ def _apply_sequence_drift(
     return latents
 
 
+def _episode_window(rng: np.random.Generator) -> tuple[int, int]:
+    onset = int(rng.integers(1, 7))
+    return onset, int(rng.integers(3, 11 - onset))
+
+
 def generate_sample_specs(config: dict[str, Any], seed: int) -> list[SampleSpec]:
     """Generate sample-level latent specifications for simulator execution."""
     rng = np.random.default_rng(seed)
@@ -255,11 +261,17 @@ def generate_sample_specs(config: dict[str, Any], seed: int) -> list[SampleSpec]
     n_sequences = int(sampling_cfg["n_sequences"])
     sequence_length = int(sampling_cfg["sequence_length"])
     dt_seconds = float(sampling_cfg["dt_seconds"])
+    episode_enabled = config["scenarios"].get("hazard_episode", {}).get("enabled", False)
+    episode_seed = int.from_bytes(hashlib.sha256(f"{seed}:hazard_episode".encode()).digest()[:8], "big")
+    episode_rng = np.random.default_rng(episode_seed) if episode_enabled else None
 
     for seq_idx in range(n_sequences):
         sequence_id = f"seq_{seq_idx:06d}"
         components, weights = _choose_components(rng, all_agents, mixtures_cfg)
         label, agent_id = _label_and_agent_id(components, weights, hazard_agents, labeling_cfg)
+
+        episode = episode_enabled and label == "hazard" and episode_rng.random() < 0.5
+        onset, episode_duration = _episode_window(episode_rng) if episode else (0, sequence_length)
 
         base_latents = _sample_base_latents(rng, config)
         drift_terms = {
@@ -295,12 +307,20 @@ def generate_sample_specs(config: dict[str, Any], seed: int) -> list[SampleSpec]
                 latents["scenario"]["flicker_active"] = False
                 latents["scenario"]["baseline_spike"] = 0.0
 
+            frame_weights = weights
+            if episode_enabled:
+                active = label == "hazard" and onset <= step < onset + episode_duration
+                latents["hazard_active_t"] = active
+                latents["scenario"].update(hazard_episode=episode, episode_onset=onset if episode else None,
+                                           episode_duration=episode_duration if episode else None)
+                frame_weights = [w if agent not in hazard_agents or active else 0.0
+                                 for agent, w in zip(components, weights)]
             spec = SampleSpec(
                 sample_id=f"sample_{sample_index:08d}",
                 sequence_id=sequence_id,
                 timestamp_sim=step * dt_seconds,
                 components=components,
-                weights=weights,
+                weights=frame_weights,
                 label=label,
                 agent_id=agent_id,
                 latents=latents,

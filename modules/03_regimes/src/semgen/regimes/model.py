@@ -439,12 +439,28 @@ def fit_and_assign_regimes(df: pd.DataFrame, config: dict[str, Any]) -> FittedRe
 
     ot_cfg = config["optimal_transport"]
     entropic_reg = float(ot_cfg["entropic_reg"])
-    cost_sq = _pairwise_cost_sq(x_hazard, x_benign, ctx)
+    compute_diagnostic = bool(ot_cfg.get("compute_diagnostic", True))
+    cost_sq = _pairwise_cost_sq(x_hazard, x_benign, ctx) if compute_diagnostic else None
 
     requested_method = str(ot_cfg["method"])
     sinkhorn_metadata: dict[str, Any] = {}
 
-    if entropic_reg > 0.0:
+    if not compute_diagnostic:
+        # This summary does not determine the fitted metric, boundaries or assignments.
+        w2 = None
+        ot_geometry = {
+            "requested_method": requested_method,
+            "effective_method": None,
+            "status": "not_computed",
+            "entropic_reg": entropic_reg,
+            "w2": None,
+            "converged": None,
+            "iterations": 0,
+            "error_class": None,
+            "error_message": None,
+            "metadata": {"reason": "disabled_by_config"},
+        }
+    elif entropic_reg > 0.0:
         try:
             w2, sinkhorn_metadata = sinkhorn_wasserstein2(cost_sq=cost_sq, entropic_reg=entropic_reg)
             if not np.isfinite(w2):
@@ -543,7 +559,7 @@ def fit_and_assign_regimes(df: pd.DataFrame, config: dict[str, Any]) -> FittedRe
         "metadata": {
             "indicator_order": INDICATOR_ORDER,
             "ground_metric_type": ctx.metric_type,
-            "ot_w2": float(w2),
+            "ot_w2": float(w2) if w2 is not None else None,
         },
     }
 

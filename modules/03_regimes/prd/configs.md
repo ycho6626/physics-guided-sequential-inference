@@ -46,3 +46,9 @@ output:
 Notes:
 - Boundary quantiles are defined on class-conditional distance distributions.
 - Weight tuning must be documented in experiments.
+- `optimal_transport.compute_diagnostic` is optional and defaults to true when absent
+  (no default key is inserted into existing config snapshots). Setting false skips the
+  quadratic pairwise OT summary only. The fitted metric, boundaries, regime labels and
+  risk scores are identical; no substitute statistic is computed. The model records
+  `ot_geometry.status: not_computed`, with null W2/effective method/convergence, and
+  `boundaries.metadata.ot_w2: null`. Frozen apply does not consume this metadata.

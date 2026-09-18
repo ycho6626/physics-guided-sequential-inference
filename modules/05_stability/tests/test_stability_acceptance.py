@@ -17,7 +17,8 @@ import yaml
 from conftest import REGIME_ORDER, build_stability_inputs
 from semgen.stability.config import ConfigValidationError, load_schema, validate_config
 from semgen.stability.dataset import load_and_join_inputs
-from semgen.stability.errors import InputValidationError
+from semgen.stability.errors import InputValidationError, ModelValidationError
+from semgen.stability.hmm import _allowed_transition_mask, _init_transition_matrix
 from semgen.stability.io import sha256_file, write_outputs
 from semgen.stability.persistence import expected_exit_steps, posterior_persistence_steps
 from semgen.stability.pipeline import run_stability_pipeline
@@ -424,6 +425,52 @@ def test_e_persistence_decreases_with_lower_self_transition() -> None:
     t_high = expected_exit_steps(trans_high, [0])
     t_low = expected_exit_steps(trans_low, [0])
     assert float(t_high[0]) > float(t_low[0])
+
+
+def test_e_singleton_confirmation_reachability_arithmetic(valid_config: dict, module_root: Path) -> None:
+    policy_config = yaml.safe_load(
+        (module_root.parent / "06_policies" / "configs" / "policies.yaml").read_text(encoding="utf-8")
+    )
+    assert valid_config["states"]["confirmable_set"] == ["trusted"]
+    assert float(valid_config["persistence"]["dt_seconds"]) == 1.0
+    assert float(valid_config["grading"]["ordinal"]["rules"]["B"]["persistence_s"]) == 10.0
+    assert float(policy_config["thresholds"]["persistence_seconds"]["confirm"]) == 10.0
+
+    mask = _allowed_transition_mask(valid_config, len(valid_config["states"]["names"]))
+    configured_initial = _init_transition_matrix(
+        valid_config,
+        len(valid_config["states"]["names"]),
+        mask,
+    )
+    assert configured_initial[0, 0] == pytest.approx(0.90 / (0.90 + 0.09))
+
+    posterior = np.array([[1.0, 0.0], [0.85, 0.15]], dtype=np.float64)
+
+    below = np.array([[0.899, 0.101], [0.20, 0.80]], dtype=np.float64)
+    at_boundary = np.array([[0.90, 0.10], [0.20, 0.80]], dtype=np.float64)
+
+    below_exit = expected_exit_steps(below, [0])
+    boundary_exit = expected_exit_steps(at_boundary, [0])
+    below_persistence = posterior_persistence_steps(posterior, below_exit, [0])
+    boundary_persistence = posterior_persistence_steps(posterior, boundary_exit, [0])
+
+    assert below_exit[0] == pytest.approx(1.0 / (1.0 - 0.899))
+    assert boundary_exit[0] == pytest.approx(10.0)
+    assert np.allclose(
+        boundary_persistence,
+        posterior[:, 0] / (1.0 - 0.90),
+        atol=1e-12,
+        rtol=0.0,
+    )
+    assert float(np.max(below_persistence)) < 10.0
+    assert boundary_persistence[0] == pytest.approx(10.0)
+
+
+def test_e_closed_confirmable_class_fails_instead_of_reporting_zero_exit() -> None:
+    transition = np.array([[1.0, 0.0], [0.20, 0.80]], dtype=np.float64)
+
+    with pytest.raises(ModelValidationError, match="no finite expected exit time"):
+        expected_exit_steps(transition, [0])
 
 
 def test_e_zero_confirmable_mass_yields_zero_persistence() -> None:

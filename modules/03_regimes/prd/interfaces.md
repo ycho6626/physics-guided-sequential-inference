@@ -42,6 +42,9 @@ Directory containing:
     numerically unusable Sinkhorn kernels fail closed into a Gaussian-distribution W2
     approximation with `status: "fallback"`. The approximation is not valid entropic OT
     (see `../../../docs/VALIDATION.md`)
+  - when explicitly disabled by `optimal_transport.compute_diagnostic: false`, the diagnostic has
+    `status: "not_computed"` and null W2/effective method/convergence; boundary metadata's OT W2
+    is also null. The fitted metric, thresholds and decision outputs remain identical.
 - `boundaries.json` with:
   - `schema_version`, regime labels, boundary quantiles, and fitted thresholds
   - risk-score settings and boundary metadata (`indicator_order`, ground metric type, OT W2 summary)
