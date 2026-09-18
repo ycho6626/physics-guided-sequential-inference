@@ -7,6 +7,10 @@ This PRD defines **how to evaluate** the full pipeline in a way that is:
 - implementable and repeatable (dataset splits, fixed configs, run manifests).
 
 ## Scope
+
+The separate [operational architecture benchmark](operational_architecture.md) has its own
+sequence-level endpoints and controls. Its completed comparisons do not satisfy or replace the
+original alarm-pipeline acceptance criteria below.
 - Offline experiments that use:
   - synthetic data from `01_simulator` and
   - a limited set of real measurements (when available) for calibration/verification.

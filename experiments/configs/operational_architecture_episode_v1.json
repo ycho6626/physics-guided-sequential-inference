@@ -1,0 +1,470 @@
+{
+  "schema_version": "operational_architecture.v1",
+  "population": "episode",
+  "seed_namespace": "cbrn/operational-architecture/episode-v1",
+  "seeds": {
+    "simulator": 3655592472,
+    "split": 2199927148,
+    "inner_split": 3955214215,
+    "selection_folds": 2742949937,
+    "final_folds": 3056938702,
+    "wda": 1277874664,
+    "embedding": 897049539,
+    "z/benign": 3666196291,
+    "z/hazard": 3984157171,
+    "bootstrap": 3378522257
+  },
+  "arms": [
+    "CAND",
+    "-OT",
+    "-REP",
+    "-TEMP",
+    "S0"
+  ],
+  "module_configs": {
+    "simulator": {
+      "schema_version": "sim.v1",
+      "output": {
+        "format": "parquet",
+        "include_clean": false,
+        "include_latents": true,
+        "compression": "zstd"
+      },
+      "wavelength_grid": {
+        "start_nm": 900.0,
+        "stop_nm": 2500.0,
+        "step_nm": 2.0
+      },
+      "seed": {
+        "base": 3655592472
+      },
+      "sampling": {
+        "n_samples": 40000,
+        "mode": "sequence",
+        "n_sequences": 4000,
+        "sequence_length": 10,
+        "dt_seconds": 1.0
+      },
+      "agents": {
+        "hazard_agents": [
+          "GB",
+          "VX"
+        ],
+        "benign_agents": [
+          "NONE",
+          "WATER",
+          "OIL"
+        ],
+        "library": {
+          "NONE": {
+            "absorption_profile": "builtin:no_absorption"
+          },
+          "WATER": {
+            "absorption_profile": "builtin:gaussian_peaks",
+            "peaks": [
+              {
+                "center_nm": 1450,
+                "width_nm": 40,
+                "strength": 0.18
+              },
+              {
+                "center_nm": 1940,
+                "width_nm": 60,
+                "strength": 0.14
+              }
+            ]
+          },
+          "OIL": {
+            "absorption_profile": "builtin:gaussian_peaks",
+            "peaks": [
+              {
+                "center_nm": 1200,
+                "width_nm": 30,
+                "strength": 0.12
+              },
+              {
+                "center_nm": 1725,
+                "width_nm": 45,
+                "strength": 0.1
+              }
+            ]
+          },
+          "GB": {
+            "absorption_profile": "builtin:gaussian_peaks",
+            "peaks": [
+              {
+                "center_nm": 1210,
+                "width_nm": 20,
+                "strength": 1.0
+              },
+              {
+                "center_nm": 1730,
+                "width_nm": 35,
+                "strength": 0.6
+              }
+            ]
+          },
+          "VX": {
+            "absorption_profile": "builtin:gaussian_peaks",
+            "peaks": [
+              {
+                "center_nm": 1040,
+                "width_nm": 25,
+                "strength": 0.9
+              },
+              {
+                "center_nm": 1520,
+                "width_nm": 40,
+                "strength": 0.7
+              }
+            ]
+          }
+        }
+      },
+      "mixtures": {
+        "enabled": true,
+        "max_components": 2,
+        "weight_prior": "dirichlet",
+        "dirichlet_alpha": 0.8
+      },
+      "latents": {
+        "concentration": {
+          "prior": "loguniform",
+          "min": 1e-06,
+          "max": 0.01
+        },
+        "path_length": {
+          "prior": "uniform",
+          "min": 0.1,
+          "max": 5.0
+        },
+        "humidity": {
+          "prior": "uniform",
+          "min": 0.0,
+          "max": 1.0
+        },
+        "distance_m": {
+          "prior": "uniform",
+          "min": 0.5,
+          "max": 20.0
+        },
+        "angle_deg": {
+          "prior": "uniform",
+          "min": 0.0,
+          "max": 60.0
+        }
+      },
+      "illumination": {
+        "model": "blackbody",
+        "blackbody": {
+          "temp_K": {
+            "prior": "uniform",
+            "min": 2500,
+            "max": 6500
+          }
+        }
+      },
+      "baseline": {
+        "enabled": true,
+        "model": "poly2",
+        "poly2": {
+          "b0": {
+            "prior": "normal",
+            "mean": 0.0,
+            "std": 0.02
+          },
+          "b1": {
+            "prior": "normal",
+            "mean": 0.0,
+            "std": 0.005
+          },
+          "b2": {
+            "prior": "normal",
+            "mean": 0.0,
+            "std": 0.001
+          }
+        }
+      },
+      "sensor_response": {
+        "enabled": true,
+        "model": "smooth_random",
+        "smooth_random": {
+          "knots": 8,
+          "amplitude": 0.05
+        }
+      },
+      "noise": {
+        "gaussian": {
+          "enabled": true,
+          "sigma": {
+            "prior": "uniform",
+            "min": 0.001,
+            "max": 0.02
+          }
+        },
+        "shot": {
+          "enabled": true,
+          "alpha": {
+            "prior": "uniform",
+            "min": 0.0,
+            "max": 0.02
+          }
+        },
+        "clipping": {
+          "enabled": true,
+          "y_min": 0.0,
+          "y_max": 1.0
+        }
+      },
+      "scenarios": {
+        "flicker": {
+          "enabled": true,
+          "prob": 0.15,
+          "duration_steps": {
+            "min": 1,
+            "max": 5
+          },
+          "baseline_spike_std": 0.06
+        },
+        "hazard_episode": {
+          "enabled": true
+        }
+      },
+      "labeling": {
+        "mode": "binary",
+        "hazard_label": "hazard",
+        "benign_label": "benign"
+      }
+    },
+    "indicators": {
+      "schema_version": "ind.v1",
+      "preprocessing": {
+        "normalization": "unit_max",
+        "smoothing": {
+          "enabled": true,
+          "method": "savitzky_golay",
+          "window": 11,
+          "poly_order": 3
+        }
+      },
+      "clipping": {
+        "enabled": true,
+        "y_min": 0.0,
+        "y_max": 1.0,
+        "eps": 1e-09
+      },
+      "baseline": {
+        "enabled": true,
+        "model": "poly2",
+        "robust_fit": false,
+        "lambda_rescale": true,
+        "eps": 1e-09
+      },
+      "snr": {
+        "mode": "residual",
+        "signal_stat": "median",
+        "noise_stat": "mad",
+        "snr_max": 1000000.0,
+        "eps": 1e-09
+      },
+      "band_ratios": {
+        "stat": "mean",
+        "eps": 1e-09,
+        "ratio_min": 0.0,
+        "ratio_max": 1000000.0,
+        "ratio_1": {
+          "numerator": [
+            1200.0,
+            1250.0
+          ],
+          "denominator": [
+            1350.0,
+            1400.0
+          ]
+        },
+        "ratio_2": {
+          "numerator": [
+            1500.0,
+            1560.0
+          ],
+          "denominator": [
+            1700.0,
+            1760.0
+          ]
+        },
+        "ratio_3": {
+          "numerator": [
+            1010.0,
+            1060.0
+          ],
+          "denominator": [
+            1300.0,
+            1350.0
+          ]
+        }
+      },
+      "entropy": {
+        "enabled": true,
+        "use_residual": true,
+        "normalize": true,
+        "eps": 1e-12,
+        "bins": {
+          "enabled": false,
+          "n_bins": 64
+        }
+      },
+      "output": {
+        "include_audit_fields": true,
+        "include_passthrough_labels": true
+      }
+    },
+    "regimes": {
+      "schema_version": "reg.v1",
+      "distribution": {
+        "method": "histogram",
+        "bins_per_dim": 8,
+        "kde_bandwidth": 0.2
+      },
+      "ground_metric": {
+        "type": "mahalanobis",
+        "weights": {
+          "snr": 1.0,
+          "clipping_fraction": 1.5,
+          "baseline_slope": 0.8,
+          "baseline_curvature": 0.8,
+          "band_ratio_1": 1.2,
+          "band_ratio_2": 1.0,
+          "band_ratio_3": 0.7,
+          "spectral_entropy": 1.3
+        }
+      },
+      "optimal_transport": {
+        "method": "wasserstein2",
+        "entropic_reg": 0.01,
+        "compute_diagnostic": false
+      },
+      "regimes": {
+        "labels": [
+          "trusted",
+          "ambiguous",
+          "degraded",
+          "high_risk"
+        ],
+        "boundary_quantiles": {
+          "trusted": 0.7,
+          "ambiguous": 0.85,
+          "degraded": 0.95
+        }
+      },
+      "risk_score": {
+        "scale": "unit",
+        "clamp": [
+          0.0,
+          1.0
+        ]
+      },
+      "output": {
+        "include_debug": false
+      }
+    },
+    "embeddings": {
+      "schema_version": "emb.v1",
+      "embedding": {
+        "dim": 2,
+        "normalize": true
+      },
+      "model": {
+        "type": "mlp",
+        "hidden_dims": [
+          32,
+          16
+        ],
+        "activation": "relu",
+        "batch_norm": false
+      },
+      "loss": {
+        "classification": {
+          "enabled": true,
+          "weight": 1.0
+        },
+        "metric": {
+          "enabled": true,
+          "type": "triplet",
+          "margin": 0.5,
+          "weight": 1.0
+        }
+      },
+      "training": {
+        "epochs": 40,
+        "batch_size": 128,
+        "learning_rate": 0.001,
+        "weight_decay": 0.0001,
+        "early_stopping": {
+          "enabled": true,
+          "patience": 8
+        },
+        "seed": 897049539
+      },
+      "data_split": {
+        "method": "hash",
+        "train_frac": 0.8,
+        "unit": "sequence_id"
+      },
+      "output": {
+        "include_passthrough": true
+      }
+    }
+  },
+  "split": {
+    "unit": "sequence_id",
+    "train_frac": 0.8,
+    "val_frac": 0.1,
+    "test_frac": 0.1
+  },
+  "readout": {
+    "components": 2,
+    "scale_floor": 1e-08,
+    "covariance_floor": 0.0001,
+    "pseudocount": 0.001,
+    "initialization_max_iters": 100,
+    "initialization_tol": 0.0001,
+    "max_iters": 100,
+    "tol_per_frame": 1e-06
+  },
+  "evaluation": {
+    "alpha": 0.01,
+    "bootstrap_replicates": 1000,
+    "confidence": 0.95,
+    "quantile_method": "linear"
+  },
+  "whitening_floor": 1e-08,
+  "ot": {
+    "n_ref": 2000,
+    "kappa_grid": [
+      0.02,
+      0.05,
+      0.2
+    ],
+    "marginal_tol": 1e-06,
+    "max_iters": 100,
+    "query_block": 128
+  },
+  "wda": {
+    "n_ref": 1000,
+    "dimension": 4,
+    "kappa": 0.05,
+    "sinkhorn_iters": 30,
+    "learning_rate": 0.05,
+    "steps": 200
+  },
+  "emission": {
+    "rho_grid": [
+      0,
+      1,
+      4,
+      16
+    ],
+    "variance_floor": 1e-08
+  },
+  "eta": 0.05
+}

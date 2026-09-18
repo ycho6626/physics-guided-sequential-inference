@@ -1,5 +1,28 @@
 # Architecture Validation
 
+## Two Distinct Implementations
+
+This page preserves the original demonstrator's audit disposition. The later
+[operational benchmark](OPERATIONAL_BENCHMARK.md) is also included: it makes OT decision-bearing,
+uses WDA rather than regime-label distillation, and evaluates a supervised two-state filter with
+independent episode truth. Its primary and episode comparisons found no demonstrated AUROC
+advantage at the reported precision. That is distinct from the older underpowered battery below.
+
+The public port retains the numerical contracts and synthetic regressions for E1 isolation,
+WDA gradients, transport dependency/gauge handling, solver certificates, fixed filtering,
+calibration, full action-label serialization, paired inference, and complete bounded smoke paths.
+No study population is executed by these tests. Public-port tests are implementation checks,
+not newly generated evidence supporting the archived aggregate results.
+
+The curated update was validated under Python 3.12.13 with `OMP_NUM_THREADS=1`,
+`OPENBLAS_NUM_THREADS=1` and `MKL_NUM_THREADS=1`: 198 E1/readout/operational tests (including both
+complete authored smokes), followed by 115 remaining experiment tests including portable
+saved-prediction reporting and aggregate consistency. Module-01/03/05 non-slow suites passed
+23/32/46 tests. Three slow tests across the module and experiment runs were not included.
+The existing Matplotlib/NumPy deprecations and Intel/LLVM OpenMP coexistence warning remain
+disclosed, not resolved by this port. JSON/config validation, compilation, scoped pyflakes,
+local documentation links and whitespace checks also passed. No full study was rerun.
+
 ## Scope
 
 This note records the disposition of the original demonstrator architecture after an independent

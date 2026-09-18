@@ -4,7 +4,9 @@
 
 The system converts a latent-state inference problem into a deterministic chain of inspectable transformations. Every stage can run independently, validates its inputs, writes explicit artifacts, and fails closed when a contract is violated.
 
-For observations `y_t = F(z_t, η_t; θ) + ε_t`, the pipeline estimates reliability regime and temporal state without exposing latent `z_t` or nuisance `η_t` to realizable stages. The simulator retains those quantities only for controlled evaluation and oracle ceilings.
+For observations `y_t = F(z_t, η_t; θ) + ε_t`, inference uses observed measurements, not latent
+`z_t` or nuisance `η_t`. Simulator truth supplies training supervision and controlled evaluation.
+Privileged reference estimators are explicitly separate and are not automatically ceilings.
 
 ## End-to-End Dataflow
 
@@ -24,6 +26,12 @@ private state across module boundaries. The historical runner is isolated behind
 leaky-reproduction flag.
 
 ## Evaluation Plane
+
+The [operational benchmark](OPERATIONAL_BENCHMARK.md) is a separate path: observed indicators
+and a spectral cone-GLR score feed WDA, a decision-bearing transport coordinate, a supervised
+two-state filter, and calibrated policy. It does not replace the demonstrator above or reuse its
+persistence gates. Its simulator episode extension supplies onset/activity truth. Reporting
+bands never feed back into decisions. See the [implementation contract](../experiments/prd/operational_architecture.md).
 
 The pipeline's evaluation layer is intentionally separate from model execution:
 

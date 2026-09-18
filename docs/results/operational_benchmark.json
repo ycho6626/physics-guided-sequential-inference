@@ -1,0 +1,1230 @@
+{
+  "description": "Selected aggregate endpoints from completed synthetic studies; not a new run.",
+  "episode_supplement": {
+    "analysis": "post-execution secondary reporting completion; not a registered confirmatory analysis",
+    "bootstrap_replicates": 1000,
+    "confidence": "pointwise 95%; no multiplicity adjustment",
+    "contrasts": {
+      "CAND-(-OT)": {
+        "delay": {
+          "estimate": -2.0,
+          "evaluable_bootstrap_replicates": 644,
+          "interval_95": [
+            -2.0,
+            -2.0
+          ],
+          "unevaluable_bootstrap_replicates": 356
+        },
+        "mae_absent": {
+          "estimate": -0.0026324232784742385,
+          "evaluable_bootstrap_replicates": 1000,
+          "interval_95": [
+            -0.014068157887652026,
+            0.00808680817128865
+          ],
+          "unevaluable_bootstrap_replicates": 0
+        },
+        "mae_present": {
+          "estimate": 0.010112667608126902,
+          "evaluable_bootstrap_replicates": 1000,
+          "interval_95": [
+            -0.003828628412752094,
+            0.023291975516921755
+          ],
+          "unevaluable_bootstrap_replicates": 0
+        },
+        "spearman_all_frames": {
+          "estimate": -0.0006281068477460572,
+          "evaluable_bootstrap_replicates": 1000,
+          "interval_95": [
+            -0.004957677177255815,
+            0.00400773667419386
+          ],
+          "unevaluable_bootstrap_replicates": 0
+        }
+      },
+      "CAND-(-REP)": {
+        "delay": {
+          "estimate": 0.0,
+          "evaluable_bootstrap_replicates": 644,
+          "interval_95": [
+            0.0,
+            0.0
+          ],
+          "unevaluable_bootstrap_replicates": 356
+        },
+        "mae_absent": {
+          "estimate": 0.010629679688151983,
+          "evaluable_bootstrap_replicates": 1000,
+          "interval_95": [
+            -0.0010563840235013444,
+            0.025713264445672446
+          ],
+          "unevaluable_bootstrap_replicates": 0
+        },
+        "mae_present": {
+          "estimate": 0.009090337166217433,
+          "evaluable_bootstrap_replicates": 1000,
+          "interval_95": [
+            -0.0038631878113955243,
+            0.022331098452176918
+          ],
+          "unevaluable_bootstrap_replicates": 0
+        },
+        "spearman_all_frames": {
+          "estimate": -0.0028888422770945166,
+          "evaluable_bootstrap_replicates": 1000,
+          "interval_95": [
+            -0.009631533089054123,
+            0.0034321643999598306
+          ],
+          "unevaluable_bootstrap_replicates": 0
+        }
+      },
+      "CAND-(-TEMP)": {
+        "delay": {
+          "estimate": -1.0,
+          "evaluable_bootstrap_replicates": 644,
+          "interval_95": [
+            -1.0,
+            -1.0
+          ],
+          "unevaluable_bootstrap_replicates": 356
+        },
+        "mae_absent": {
+          "estimate": 0.0028127156510993068,
+          "evaluable_bootstrap_replicates": 1000,
+          "interval_95": [
+            0.0007409718283638511,
+            0.004688926140890626
+          ],
+          "unevaluable_bootstrap_replicates": 0
+        },
+        "mae_present": {
+          "estimate": 0.005311651484725566,
+          "evaluable_bootstrap_replicates": 1000,
+          "interval_95": [
+            0.0003972025104577782,
+            0.01185458635795173
+          ],
+          "unevaluable_bootstrap_replicates": 0
+        },
+        "spearman_all_frames": {
+          "estimate": -0.0016013572964567735,
+          "evaluable_bootstrap_replicates": 1000,
+          "interval_95": [
+            -0.0032212110524460517,
+            -0.00038316342047905484
+          ],
+          "unevaluable_bootstrap_replicates": 0
+        }
+      }
+    },
+    "provenance": {
+      "analysis_source_hashes": {
+        "experiments/src/experiment_runner/e1_evaluation.py": "ffea65fec63a6f31d2759c0d8569279e1a52e0ba5b5fd91a65130075c9b8effb",
+        "experiments/src/experiment_runner/episode_comparisons.py": "f71f8e2e742d57099529580a5555e38bf9b43a2ed8d6c66fdcce4780b3770445",
+        "experiments/src/experiment_runner/operational_architecture.py": "4ef533832c75e559a33546cf3d38115624b4a4b1666f8320ce406369bce9855e"
+      },
+      "code_revision": "f2010d9543ea5834d82e6e44dbb37ab4373a755e",
+      "supplement_sha256": "9554edd747b41a85b6bc54658385177e126020f19dffc99f01db0a537f6d4ce4",
+      "working_tree_dirty": true
+    },
+    "same_single_detected_episode": true,
+    "uncertainty": "conditional on this fitted deployment and calibration; no retraining/seed uncertainty"
+  },
+  "limitations": [
+    "Intervals condition on the fitted deployment and calibration; no retraining or seed uncertainty.",
+    "Pointwise intervals are not multiplicity-adjusted or equivalence tests.",
+    "All timing arms detected one identical episode; degenerate delay intervals are not population precision.",
+    "Occupancy includes re-entry and finite-horizon structure; no time-only comparator was evaluated.",
+    "Original primary action strings truncated CONFIRM to CONFIR; numerical endpoints were audited unaffected. The port retains the serialization fix.",
+    "Primary selection was retained from the earlier scaling procedure; a cold Newton-CG run is not claimed to reproduce that selection bitwise.",
+    "Historical run objects and preparation are not distributed. Source revisions identify original executions, not commits in this curated repository."
+  ],
+  "port_source_revision": "5c448a75d008b3a0b1f5e89a4667b8a6b37fb605",
+  "studies": {
+    "episode": {
+      "auroc": {
+        "arms": {
+          "-OT": {
+            "estimate": 0.5470147449842881,
+            "interval_95": [
+              0.4911959820589263,
+              0.5960861332688744
+            ]
+          },
+          "-REP": {
+            "estimate": 0.5570595976687347,
+            "interval_95": [
+              0.5036922890983805,
+              0.6087798458356833
+            ]
+          },
+          "-TEMP": {
+            "estimate": 0.5527354765933447,
+            "interval_95": [
+              0.4963036822173878,
+              0.6049371525259851
+            ]
+          },
+          "CAND": {
+            "estimate": 0.5551795450272607,
+            "interval_95": [
+              0.49943262697069807,
+              0.6082064297800339
+            ]
+          },
+          "S0": {
+            "estimate": 0.5416968817984047,
+            "interval_95": [
+              0.486412590981119,
+              0.5958517981360621
+            ]
+          }
+        },
+        "bootstrap_replicates": 1000,
+        "contrasts": {
+          "CAND--OT": {
+            "estimate": 0.008164800042972598,
+            "interval_95": [
+              -0.02229339564364957,
+              0.04219576719576732
+            ]
+          },
+          "CAND--REP": {
+            "estimate": -0.0018800526414739505,
+            "interval_95": [
+              -0.03593922058389069,
+              0.03250879596057268
+            ]
+          },
+          "CAND--TEMP": {
+            "estimate": 0.002444068433916091,
+            "interval_95": [
+              -0.004755861735557174,
+              0.011099025058415939
+            ]
+          },
+          "CAND-S0": {
+            "estimate": 0.013482663228856051,
+            "interval_95": [
+              -0.03619034190100175,
+              0.055493782397335725
+            ]
+          }
+        },
+        "reason": null
+      },
+      "calibration_benign_sequences": 168,
+      "coverage": {
+        "assigned": {
+          "benign": 195,
+          "hazard": 203
+        },
+        "e1_eligible": {
+          "benign": 189,
+          "hazard": 197
+        },
+        "excluded_sequences": 12,
+        "exclusion_reason": "insufficient nonmissing, nonclipped E1 channels",
+        "paired_eligible": {
+          "benign": 189,
+          "hazard": 197
+        }
+      },
+      "episode_timing": {
+        "-OT": {
+          "categories": {
+            "absent": {
+              "interval_95": [
+                0.944455028336686,
+                0.9997416883887591
+              ],
+              "rate": 0.9897959183673469,
+              "successes": 97,
+              "trials": 98
+            },
+            "early": {
+              "interval_95": [
+                0.0,
+                0.03694198703519287
+              ],
+              "rate": 0.0,
+              "successes": 0,
+              "trials": 98
+            },
+            "in_window": {
+              "interval_95": [
+                0.0002583116112408942,
+                0.055544971663313944
+              ],
+              "rate": 0.01020408163265306,
+              "successes": 1,
+              "trials": 98
+            },
+            "late": {
+              "interval_95": [
+                0.0,
+                0.03694198703519287
+              ],
+              "rate": 0.0,
+              "successes": 0,
+              "trials": 98
+            }
+          },
+          "conditional_delay": {
+            "evaluable_bootstrap_replicates": 644,
+            "interval_95": [
+              2.0,
+              2.0
+            ],
+            "median": 2.0,
+            "n_detected": 1
+          },
+          "miss": {
+            "interval_95": [
+              0.944455028336686,
+              0.9997416883887591
+            ],
+            "rate": 0.9897959183673469,
+            "successes": 97,
+            "trials": 98
+          }
+        },
+        "-REP": {
+          "categories": {
+            "absent": {
+              "interval_95": [
+                0.944455028336686,
+                0.9997416883887591
+              ],
+              "rate": 0.9897959183673469,
+              "successes": 97,
+              "trials": 98
+            },
+            "early": {
+              "interval_95": [
+                0.0,
+                0.03694198703519287
+              ],
+              "rate": 0.0,
+              "successes": 0,
+              "trials": 98
+            },
+            "in_window": {
+              "interval_95": [
+                0.0002583116112408942,
+                0.055544971663313944
+              ],
+              "rate": 0.01020408163265306,
+              "successes": 1,
+              "trials": 98
+            },
+            "late": {
+              "interval_95": [
+                0.0,
+                0.03694198703519287
+              ],
+              "rate": 0.0,
+              "successes": 0,
+              "trials": 98
+            }
+          },
+          "conditional_delay": {
+            "evaluable_bootstrap_replicates": 644,
+            "interval_95": [
+              0.0,
+              0.0
+            ],
+            "median": 0.0,
+            "n_detected": 1
+          },
+          "miss": {
+            "interval_95": [
+              0.944455028336686,
+              0.9997416883887591
+            ],
+            "rate": 0.9897959183673469,
+            "successes": 97,
+            "trials": 98
+          }
+        },
+        "-TEMP": {
+          "categories": {
+            "absent": {
+              "interval_95": [
+                0.944455028336686,
+                0.9997416883887591
+              ],
+              "rate": 0.9897959183673469,
+              "successes": 97,
+              "trials": 98
+            },
+            "early": {
+              "interval_95": [
+                0.0,
+                0.03694198703519287
+              ],
+              "rate": 0.0,
+              "successes": 0,
+              "trials": 98
+            },
+            "in_window": {
+              "interval_95": [
+                0.0002583116112408942,
+                0.055544971663313944
+              ],
+              "rate": 0.01020408163265306,
+              "successes": 1,
+              "trials": 98
+            },
+            "late": {
+              "interval_95": [
+                0.0,
+                0.03694198703519287
+              ],
+              "rate": 0.0,
+              "successes": 0,
+              "trials": 98
+            }
+          },
+          "conditional_delay": {
+            "evaluable_bootstrap_replicates": 644,
+            "interval_95": [
+              1.0,
+              1.0
+            ],
+            "median": 1.0,
+            "n_detected": 1
+          },
+          "miss": {
+            "interval_95": [
+              0.944455028336686,
+              0.9997416883887591
+            ],
+            "rate": 0.9897959183673469,
+            "successes": 97,
+            "trials": 98
+          }
+        },
+        "CAND": {
+          "categories": {
+            "absent": {
+              "interval_95": [
+                0.944455028336686,
+                0.9997416883887591
+              ],
+              "rate": 0.9897959183673469,
+              "successes": 97,
+              "trials": 98
+            },
+            "early": {
+              "interval_95": [
+                0.0,
+                0.03694198703519287
+              ],
+              "rate": 0.0,
+              "successes": 0,
+              "trials": 98
+            },
+            "in_window": {
+              "interval_95": [
+                0.0002583116112408942,
+                0.055544971663313944
+              ],
+              "rate": 0.01020408163265306,
+              "successes": 1,
+              "trials": 98
+            },
+            "late": {
+              "interval_95": [
+                0.0,
+                0.03694198703519287
+              ],
+              "rate": 0.0,
+              "successes": 0,
+              "trials": 98
+            }
+          },
+          "conditional_delay": {
+            "evaluable_bootstrap_replicates": 644,
+            "interval_95": [
+              0.0,
+              0.0
+            ],
+            "median": 0.0,
+            "n_detected": 1
+          },
+          "miss": {
+            "interval_95": [
+              0.944455028336686,
+              0.9997416883887591
+            ],
+            "rate": 0.9897959183673469,
+            "successes": 97,
+            "trials": 98
+          }
+        }
+      },
+      "operating_points": {
+        "-OT": {
+          "benign_flicker_fpr": {
+            "assigned": 37,
+            "interval_95": [
+              0.0,
+              0.11218874692236996
+            ],
+            "rate": 0.0,
+            "successes": 0,
+            "trials": 31,
+            "unevaluable": 6
+          },
+          "benign_fpr": {
+            "assigned": 195,
+            "interval_95": [
+              0.0,
+              0.019328640067902317
+            ],
+            "rate": 0.0,
+            "successes": 0,
+            "trials": 189,
+            "unevaluable": 6
+          },
+          "recall": {
+            "assigned": 203,
+            "interval_95": [
+              0.0031515454702437853,
+              0.0438566274473575
+            ],
+            "rate": 0.015228426395939087,
+            "successes": 3,
+            "trials": 197,
+            "unevaluable": 6
+          }
+        },
+        "-REP": {
+          "benign_flicker_fpr": {
+            "assigned": 37,
+            "interval_95": [
+              0.0,
+              0.11218874692236996
+            ],
+            "rate": 0.0,
+            "successes": 0,
+            "trials": 31,
+            "unevaluable": 6
+          },
+          "benign_fpr": {
+            "assigned": 195,
+            "interval_95": [
+              0.0,
+              0.019328640067902317
+            ],
+            "rate": 0.0,
+            "successes": 0,
+            "trials": 189,
+            "unevaluable": 6
+          },
+          "recall": {
+            "assigned": 203,
+            "interval_95": [
+              0.0031515454702437853,
+              0.0438566274473575
+            ],
+            "rate": 0.015228426395939087,
+            "successes": 3,
+            "trials": 197,
+            "unevaluable": 6
+          }
+        },
+        "-TEMP": {
+          "benign_flicker_fpr": {
+            "assigned": 37,
+            "interval_95": [
+              0.0,
+              0.11218874692236996
+            ],
+            "rate": 0.0,
+            "successes": 0,
+            "trials": 31,
+            "unevaluable": 6
+          },
+          "benign_fpr": {
+            "assigned": 195,
+            "interval_95": [
+              0.0,
+              0.019328640067902317
+            ],
+            "rate": 0.0,
+            "successes": 0,
+            "trials": 189,
+            "unevaluable": 6
+          },
+          "recall": {
+            "assigned": 203,
+            "interval_95": [
+              0.0031515454702437853,
+              0.0438566274473575
+            ],
+            "rate": 0.015228426395939087,
+            "successes": 3,
+            "trials": 197,
+            "unevaluable": 6
+          }
+        },
+        "CAND": {
+          "benign_flicker_fpr": {
+            "assigned": 37,
+            "interval_95": [
+              0.0,
+              0.11218874692236996
+            ],
+            "rate": 0.0,
+            "successes": 0,
+            "trials": 31,
+            "unevaluable": 6
+          },
+          "benign_fpr": {
+            "assigned": 195,
+            "interval_95": [
+              0.0,
+              0.019328640067902317
+            ],
+            "rate": 0.0,
+            "successes": 0,
+            "trials": 189,
+            "unevaluable": 6
+          },
+          "recall": {
+            "assigned": 203,
+            "interval_95": [
+              0.0031515454702437853,
+              0.0438566274473575
+            ],
+            "rate": 0.015228426395939087,
+            "successes": 3,
+            "trials": 197,
+            "unevaluable": 6
+          }
+        },
+        "S0": {
+          "benign_flicker_fpr": {
+            "assigned": 37,
+            "interval_95": [
+              0.0,
+              0.11218874692236996
+            ],
+            "rate": 0.0,
+            "successes": 0,
+            "trials": 31,
+            "unevaluable": 6
+          },
+          "benign_fpr": {
+            "assigned": 195,
+            "interval_95": [
+              0.0001339476842093052,
+              0.029125519157554312
+            ],
+            "rate": 0.005291005291005291,
+            "successes": 1,
+            "trials": 189,
+            "unevaluable": 6
+          },
+          "recall": {
+            "assigned": 203,
+            "interval_95": [
+              0.008291285549943635,
+              0.0582331996936367
+            ],
+            "rate": 0.025380710659898477,
+            "successes": 5,
+            "trials": 197,
+            "unevaluable": 6
+          }
+        }
+      },
+      "persistence": {
+        "-OT": {
+          "bootstrap": {
+            "mae_absent": {
+              "evaluable_bootstrap_replicates": 1000,
+              "interval_95": [
+                1.9591021979979475,
+                2.050401888831466
+              ]
+            },
+            "mae_present": {
+              "evaluable_bootstrap_replicates": 1000,
+              "interval_95": [
+                1.7368588923847303,
+                1.9012634008781208
+              ]
+            },
+            "spearman_all_frames": {
+              "evaluable_bootstrap_replicates": 1000,
+              "interval_95": [
+                0.35678947594031774,
+                0.37790828104078045
+              ]
+            }
+          },
+          "frame_counts": {
+            "absent": 2372,
+            "present": 1488
+          },
+          "mae_absent": 2.0022989480827036,
+          "mae_present": 1.8248959574216694,
+          "spearman_all_frames": 0.3676676605825653
+        },
+        "-REP": {
+          "bootstrap": {
+            "mae_absent": {
+              "evaluable_bootstrap_replicates": 1000,
+              "interval_95": [
+                1.9450381344165064,
+                2.033846224463718
+              ]
+            },
+            "mae_present": {
+              "evaluable_bootstrap_replicates": 1000,
+              "interval_95": [
+                1.7386289389783989,
+                1.905779281982565
+              ]
+            },
+            "spearman_all_frames": {
+              "evaluable_bootstrap_replicates": 1000,
+              "interval_95": [
+                0.35824945879375103,
+                0.3813466267127353
+              ]
+            }
+          },
+          "frame_counts": {
+            "absent": 2372,
+            "present": 1488
+          },
+          "mae_absent": 1.9890368451160774,
+          "mae_present": 1.825918287863579,
+          "spearman_all_frames": 0.36992839601191374
+        },
+        "-TEMP": {
+          "bootstrap": {
+            "mae_absent": {
+              "evaluable_bootstrap_replicates": 1000,
+              "interval_95": [
+                1.955023802338631,
+                2.0420205177079658
+              ]
+            },
+            "mae_present": {
+              "evaluable_bootstrap_replicates": 1000,
+              "interval_95": [
+                1.7411289466608417,
+                1.9077679868989856
+              ]
+            },
+            "spearman_all_frames": {
+              "evaluable_bootstrap_replicates": 1000,
+              "interval_95": [
+                0.3578673677853993,
+                0.3786218818116264
+              ]
+            }
+          },
+          "frame_counts": {
+            "absent": 2372,
+            "present": 1488
+          },
+          "mae_absent": 1.99685380915313,
+          "mae_present": 1.8296969735450708,
+          "spearman_all_frames": 0.368640911031276
+        },
+        "CAND": {
+          "bootstrap": {
+            "mae_absent": {
+              "evaluable_bootstrap_replicates": 1000,
+              "interval_95": [
+                1.9578543901048016,
+                2.0444663834097265
+              ]
+            },
+            "mae_present": {
+              "evaluable_bootstrap_replicates": 1000,
+              "interval_95": [
+                1.7453004202433724,
+                1.9107041301723282
+              ]
+            },
+            "spearman_all_frames": {
+              "evaluable_bootstrap_replicates": 1000,
+              "interval_95": [
+                0.3570700573698472,
+                0.3763406938810462
+              ]
+            }
+          },
+          "frame_counts": {
+            "absent": 2372,
+            "present": 1488
+          },
+          "mae_absent": 1.9996665248042294,
+          "mae_present": 1.8350086250297963,
+          "spearman_all_frames": 0.3670395537348192
+        }
+      },
+      "provenance": {
+        "code_revision": "5f9bff4e1737810130fc5a9ed7fbf8001a626253",
+        "config": "experiments/configs/operational_architecture_episode_v1.json",
+        "environment": {
+          "cpu_only": true,
+          "offline_safe": true,
+          "packages": {
+            "matplotlib": "3.10.8",
+            "numpy": "1.26.4",
+            "pandas": "3.0.1",
+            "pyarrow": "23.0.1",
+            "scikit-learn": "1.8.0",
+            "scipy": "1.17.1",
+            "torch": "2.2.2"
+          },
+          "platform": "macOS-13.7.8-x86_64-i386-64bit",
+          "python_version": "3.12.13"
+        },
+        "estimates_sha256": "43834f38c142a8e44a03de9b43f26e8095d8c6043294dee722533d26d82bbb84",
+        "experiment_config_hash": "1e264af4a65c32a1ec54a8914ba72b13a54e69a7839d1d5028c751792a5dbb5d",
+        "random_seeds": {
+          "bootstrap": 3378522257,
+          "embedding": 897049539,
+          "final_folds": 3056938702,
+          "inner_split": 3955214215,
+          "selection_folds": 2742949937,
+          "simulator": 3655592472,
+          "split": 2199927148,
+          "wda": 1277874664,
+          "z/benign": 3666196291,
+          "z/hazard": 3984157171
+        },
+        "split_manifest_hash": "b57c2c50b87e443390e8187ee3271e31cda419c050a11d15120e85bcfce1d9bb",
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "working_tree_dirty": false
+      },
+      "uncertainty": "conditional on this fitted deployment and calibration; no retraining/seed uncertainty"
+    },
+    "primary": {
+      "auroc": {
+        "arms": {
+          "-OT": {
+            "estimate": 0.5253616440057118,
+            "interval_95": [
+              0.4829511668494719,
+              0.5672007684719549
+            ]
+          },
+          "-REP": {
+            "estimate": 0.5150003794071589,
+            "interval_95": [
+              0.4725659306167781,
+              0.5573027255230645
+            ]
+          },
+          "-TEMP": {
+            "estimate": 0.5337017031932286,
+            "interval_95": [
+              0.49420593530763024,
+              0.5756627553237722
+            ]
+          },
+          "CAND": {
+            "estimate": 0.5345984837510261,
+            "interval_95": [
+              0.4953714051171679,
+              0.5760978663521037
+            ]
+          },
+          "Dprime": {
+            "estimate": 0.5177597042003821,
+            "interval_95": [
+              0.4759164407469492,
+              0.5600689486282706
+            ]
+          },
+          "S0": {
+            "estimate": 0.5354331795009761,
+            "interval_95": [
+              0.492214565095921,
+              0.5750027593247932
+            ]
+          },
+          "S1": {
+            "estimate": 0.5270793236894932,
+            "interval_95": [
+              0.4849761663320985,
+              0.5665323220407966
+            ]
+          }
+        },
+        "bootstrap_replicates": 1000,
+        "contrasts": {
+          "CAND--OT": {
+            "estimate": 0.009236839745314307,
+            "interval_95": [
+              -0.04097907741975528,
+              0.05692107641260182
+            ]
+          },
+          "CAND--REP": {
+            "estimate": 0.019598104343867218,
+            "interval_95": [
+              -0.022675096403909974,
+              0.05940895262929158
+            ]
+          },
+          "CAND--TEMP": {
+            "estimate": 0.0008967805577975163,
+            "interval_95": [
+              -0.005099404675675863,
+              0.0068089788428770835
+            ]
+          },
+          "CAND-Dprime": {
+            "estimate": 0.016838779550644056,
+            "interval_95": [
+              -0.04218697184798877,
+              0.07521212309347909
+            ]
+          },
+          "CAND-S0": {
+            "estimate": -0.0008346957499499874,
+            "interval_95": [
+              -0.05464704786738682,
+              0.051256182612114745
+            ]
+          },
+          "CAND-S1": {
+            "estimate": 0.00751916006153297,
+            "interval_95": [
+              -0.0453431220380372,
+              0.06227571863165078
+            ]
+          }
+        },
+        "reason": null
+      },
+      "calibration_benign_sequences": 371,
+      "coverage": {
+        "assigned": {
+          "benign": 362,
+          "hazard": 419
+        },
+        "e1_eligible": {
+          "benign": 351,
+          "hazard": 413
+        },
+        "excluded_sequences": 17,
+        "exclusion_reason": "insufficient nonmissing, nonclipped E1 channels",
+        "paired_eligible": {
+          "benign": 351,
+          "hazard": 413
+        }
+      },
+      "operating_points": {
+        "-OT": {
+          "benign_flicker_fpr": {
+            "assigned": 48,
+            "interval_95": [
+              0.0006660362042023661,
+              0.13809902979242006
+            ],
+            "rate": 0.02631578947368421,
+            "successes": 1,
+            "trials": 38,
+            "unevaluable": 10
+          },
+          "benign_fpr": {
+            "assigned": 362,
+            "interval_95": [
+              7.212790573526912e-05,
+              0.01577063873090832
+            ],
+            "rate": 0.002849002849002849,
+            "successes": 1,
+            "trials": 351,
+            "unevaluable": 11
+          },
+          "recall": {
+            "assigned": 419,
+            "interval_95": [
+              0.003942326797769282,
+              0.028025139322150297
+            ],
+            "rate": 0.012106537530266344,
+            "successes": 5,
+            "trials": 413,
+            "unevaluable": 6
+          }
+        },
+        "-REP": {
+          "benign_flicker_fpr": {
+            "assigned": 48,
+            "interval_95": [
+              0.0,
+              0.09251276141587829
+            ],
+            "rate": 0.0,
+            "successes": 0,
+            "trials": 38,
+            "unevaluable": 10
+          },
+          "benign_fpr": {
+            "assigned": 362,
+            "interval_95": [
+              0.0006908013578111737,
+              0.020430532168216782
+            ],
+            "rate": 0.005698005698005698,
+            "successes": 2,
+            "trials": 351,
+            "unevaluable": 11
+          },
+          "recall": {
+            "assigned": 419,
+            "interval_95": [
+              0.003942326797769282,
+              0.028025139322150297
+            ],
+            "rate": 0.012106537530266344,
+            "successes": 5,
+            "trials": 413,
+            "unevaluable": 6
+          }
+        },
+        "-TEMP": {
+          "benign_flicker_fpr": {
+            "assigned": 48,
+            "interval_95": [
+              0.0006660362042023661,
+              0.13809902979242006
+            ],
+            "rate": 0.02631578947368421,
+            "successes": 1,
+            "trials": 38,
+            "unevaluable": 10
+          },
+          "benign_fpr": {
+            "assigned": 362,
+            "interval_95": [
+              7.212790573526912e-05,
+              0.01577063873090832
+            ],
+            "rate": 0.002849002849002849,
+            "successes": 1,
+            "trials": 351,
+            "unevaluable": 11
+          },
+          "recall": {
+            "assigned": 419,
+            "interval_95": [
+              0.005349632907590885,
+              0.03135139860978341
+            ],
+            "rate": 0.014527845036319613,
+            "successes": 6,
+            "trials": 413,
+            "unevaluable": 6
+          }
+        },
+        "CAND": {
+          "benign_flicker_fpr": {
+            "assigned": 48,
+            "interval_95": [
+              0.0006660362042023661,
+              0.13809902979242006
+            ],
+            "rate": 0.02631578947368421,
+            "successes": 1,
+            "trials": 38,
+            "unevaluable": 10
+          },
+          "benign_fpr": {
+            "assigned": 362,
+            "interval_95": [
+              7.212790573526912e-05,
+              0.01577063873090832
+            ],
+            "rate": 0.002849002849002849,
+            "successes": 1,
+            "trials": 351,
+            "unevaluable": 11
+          },
+          "recall": {
+            "assigned": 419,
+            "interval_95": [
+              0.003942326797769282,
+              0.028025139322150297
+            ],
+            "rate": 0.012106537530266344,
+            "successes": 5,
+            "trials": 413,
+            "unevaluable": 6
+          }
+        },
+        "Dprime": {
+          "benign_flicker_fpr": {
+            "assigned": 48,
+            "interval_95": [
+              0.0,
+              0.09251276141587829
+            ],
+            "rate": 0.0,
+            "successes": 0,
+            "trials": 38,
+            "unevaluable": 10
+          },
+          "benign_fpr": {
+            "assigned": 362,
+            "interval_95": [
+              7.212790573526912e-05,
+              0.01577063873090832
+            ],
+            "rate": 0.002849002849002849,
+            "successes": 1,
+            "trials": 351,
+            "unevaluable": 11
+          },
+          "recall": {
+            "assigned": 419,
+            "interval_95": [
+              0.0026450261706217316,
+              0.024611188613564882
+            ],
+            "rate": 0.009685230024213076,
+            "successes": 4,
+            "trials": 413,
+            "unevaluable": 6
+          }
+        },
+        "S0": {
+          "benign_flicker_fpr": {
+            "assigned": 48,
+            "interval_95": [
+              0.0006660362042023661,
+              0.13809902979242006
+            ],
+            "rate": 0.02631578947368421,
+            "successes": 1,
+            "trials": 38,
+            "unevaluable": 10
+          },
+          "benign_fpr": {
+            "assigned": 362,
+            "interval_95": [
+              0.0006908013578111737,
+              0.020430532168216782
+            ],
+            "rate": 0.005698005698005698,
+            "successes": 2,
+            "trials": 351,
+            "unevaluable": 11
+          },
+          "recall": {
+            "assigned": 419,
+            "interval_95": [
+              0.01001186417855014,
+              0.040963269620093286
+            ],
+            "rate": 0.021791767554479417,
+            "successes": 9,
+            "trials": 413,
+            "unevaluable": 6
+          }
+        },
+        "S1": {
+          "benign_flicker_fpr": {
+            "assigned": 48,
+            "interval_95": [
+              0.0,
+              0.09251276141587829
+            ],
+            "rate": 0.0,
+            "successes": 0,
+            "trials": 38,
+            "unevaluable": 10
+          },
+          "benign_fpr": {
+            "assigned": 362,
+            "interval_95": [
+              7.212790573526912e-05,
+              0.01577063873090832
+            ],
+            "rate": 0.002849002849002849,
+            "successes": 1,
+            "trials": 351,
+            "unevaluable": 11
+          },
+          "recall": {
+            "assigned": 419,
+            "interval_95": [
+              0.005349632907590885,
+              0.03135139860978341
+            ],
+            "rate": 0.014527845036319613,
+            "successes": 6,
+            "trials": 413,
+            "unevaluable": 6
+          }
+        }
+      },
+      "provenance": {
+        "code_revision": "4ac0e759a7a587c9e0f6bb2eef03c9ecb0e441fc",
+        "config": "experiments/configs/operational_architecture_v1.json",
+        "environment": {
+          "cpu_only": true,
+          "offline_safe": true,
+          "packages": {
+            "matplotlib": "3.10.8",
+            "numpy": "1.26.4",
+            "pandas": "3.0.1",
+            "pyarrow": "23.0.1",
+            "scikit-learn": "1.8.0",
+            "scipy": "1.17.1",
+            "torch": "2.2.2"
+          },
+          "platform": "macOS-13.7.8-x86_64-i386-64bit",
+          "python_version": "3.12.13"
+        },
+        "estimates_sha256": "cc2e34340f217f204474256ce721f6e831d1deda2559af102f442b09e1d45755",
+        "experiment_config_hash": "3ff6ec57dce440b4a64f64bb63e469a6462ca4859aac9a67a7987530acc04951",
+        "random_seeds": {
+          "bootstrap": 1270435397,
+          "embedding": 616566933,
+          "final_folds": 2253959047,
+          "inner_split": 3854584695,
+          "selection_folds": 2285550714,
+          "simulator": 783056791,
+          "split": 1398674034,
+          "wda": 1864086881,
+          "z/benign": 1832359985,
+          "z/hazard": 4254678117
+        },
+        "split_manifest_hash": "e8e8e3efafd1903a2c98ec55fe971ac5a4e455083686c781f3c74101894ffe9e",
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "working_tree_dirty": false
+      },
+      "uncertainty": "conditional on this fitted deployment and calibration; no retraining/seed uncertainty"
+    }
+  },
+  "units": {
+    "delay_and_mae": "frames",
+    "rates": "probability, not percent"
+  }
+}

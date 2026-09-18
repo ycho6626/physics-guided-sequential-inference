@@ -16,6 +16,9 @@ where `z_t` is the latent state of interest, `η_t` contains structured nuisance
 
 ## Computational Structure
 
+The original modular demonstrator remains available. A separate evaluated redesign makes OT
+decision-bearing; its methods and controls are described under [Architecture Validation](#architecture-validation).
+
 | Stage | Method | Output |
 |---|---|---|
 | Forward model | Beer–Lambert-style simulation with explicit nuisance and noise | spectra and latent truth |
@@ -35,8 +38,8 @@ Modules communicate through validated JSON, Parquet, and NPZ artifacts. They do 
 - The historical fit-before-split runner is retained only behind an explicit opt-in and is not valid for new evaluations.
 - Baselines and ablations reuse the same split and configuration provenance.
 - Acceptance records distinguish `pass`, `fail`, and `unevaluable`; missing support cannot become a pass.
-- Oracle calculations are ceiling diagnostics and are excluded from realizable verdicts.
-- Separability checks run upstream of architecture comparisons to distinguish measurement failure from estimator failure.
+- Privileged-reference calculations are excluded from realizable verdicts; calling one a performance bound requires a separate optimality or bounding argument.
+- Separability checks measure what specified estimators extract; their failure alone does not prove the observation channel lacks information.
 
 See [`TECHNICAL_OVERVIEW.md`](TECHNICAL_OVERVIEW.md) and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the estimands, algorithms, and dataflow.
 
@@ -47,10 +50,27 @@ decision-bearing, and that the original experiment runner fit learned stages bef
 outer split. The current implementation states the regime score directly, rejects unusable
 Sinkhorn computations, and enforces fit/frozen-apply boundaries through regression tests.
 
-The representation learner remains implemented, but its scientific utility is not established.
-The corrected exploratory battery was formally `INCONCLUSIVE / UNDERPOWERED`; its never-confirm
-pattern is diagnostic evidence, not a citable architecture result. See
-[`docs/VALIDATION.md`](docs/VALIDATION.md).
+The earlier corrected battery remains `INCONCLUSIVE / UNDERPOWERED`. Later work evaluated a
+separate, fully operational chain:
+
+**eight indicators + spectral cone-GLR → Wasserstein discriminant projection → entropic OT
+coordinate → supervised two-state filter → rank-calibrated repeated-look policy.**
+
+| Benchmark | Shared eligible test sequences | CAND AUROC (95% interval) | Comparison |
+|---|---:|---|---|
+| Constant-composition, 8,000 sequences | 764 | 0.5346 [0.4954, 0.5761] | All six paired AUROC intervals include zero |
+| Onset/duration episodes, 4,000 sequences | 386 | 0.5552 [0.4994, 0.6082] | All four paired AUROC intervals include zero |
+
+The chain is executable and OT changes its evidence score, but **no advantage over the prescribed
+controls was demonstrated at this precision**. Each timing-capable arm detected the same one of
+98 eligible episodes. These results neither establish equivalence nor rule out other OT,
+representation-learning, or temporal methods. Intervals condition on the fitted models and
+calibration, not retraining uncertainty.
+
+See [benchmark methods and results](docs/OPERATIONAL_BENCHMARK.md),
+[machine-readable aggregates](docs/results/operational_benchmark.json), and
+[validation scope](docs/VALIDATION.md). The calibrated case study below uses a different generator
+and estimand; its conclusions are not inferred from these architecture experiments.
 
 ## Case Study
 
@@ -71,6 +91,8 @@ These are different estimands and are reported separately. The result is not con
 6. Separability diagnostics: [`experiments/src/experiment_runner/separability.py`](experiments/src/experiment_runner/separability.py)
 7. Calibrated recovery probe: [`experiments/src/experiment_runner/redesign/calibrated_instrument_benchmark.py`](experiments/src/experiment_runner/redesign/calibrated_instrument_benchmark.py)
 8. Detection ceiling probe: [`experiments/src/experiment_runner/redesign/calibrated_detection_probe.py`](experiments/src/experiment_runner/redesign/calibrated_detection_probe.py)
+9. Operational OT/WDA/filter benchmark: [`experiments/src/experiment_runner/operational_architecture.py`](experiments/src/experiment_runner/operational_architecture.py)
+10. Certified numerical solver: [`experiments/src/experiment_runner/operational_transport.py`](experiments/src/experiment_runner/operational_transport.py)
 
 ## Run
 
@@ -83,6 +105,18 @@ Requirements: Python 3.11 or 3.12 and a Unix-like shell.
 
 The demo writes corrected metrics, configuration snapshots, split assignments, learned artifacts,
 logs, and manifests to `artifacts/demo/`.
+
+Exercise the new operational chain on bounded authored fixtures (not study populations):
+
+```bash
+export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
+.venv/bin/python -m experiment_runner.operational_architecture \
+  --out runs/operational-smoke --smoke
+```
+
+Use a fresh output directory. Both primary and episode smoke paths are covered by tests; full
+population commands are deliberately separate and can take hours. See the
+[reproduction instructions](docs/OPERATIONAL_BENCHMARK.md#reproduction-and-provenance).
 
 Run all retained tests:
 

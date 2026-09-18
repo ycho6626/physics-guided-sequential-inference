@@ -38,7 +38,9 @@ A positive on one estimand does not transfer automatically to another. In partic
 
 ### Physical simulator
 
-The simulator exposes latent signal, nuisance, and noise separately. This permits oracle ceilings and controlled interventions without allowing latent quantities into realizable estimators.
+The simulator records latent signal, nuisance parameters, and noiseless spectra for controlled
+evaluation. It records noise parameters, not the realized noise vector. Privileged calculations
+must specify their information boundary; they are not automatically performance ceilings.
 
 ### Indicator map
 
@@ -82,7 +84,7 @@ only.
 - simple baselines test whether complex stages add value;
 - ablations remove individual model components while preserving data and splits;
 - shortcut controls are constructed to collapse if a claimed latent relation is absent;
-- oracle estimators bound available information but never contribute to realizable scores;
+- privileged estimators never contribute to realizable scores, and bound performance only with a separate optimality or bounding argument;
 - stress sets vary nuisance severity and temporal degradation.
 
 ### Fail-closed inference
@@ -92,6 +94,26 @@ Each criterion records its value, threshold, direction, support, and evaluabilit
 ### Reproduction
 
 Run manifests bind result-bearing inputs, configuration, seeds, split assignments, code revision, and output hashes. The contract targets factors that can change numerical results rather than exhaustive host-state capture.
+
+## Operational Architecture Benchmark
+
+The separate benchmark uses nine observed channels: the eight indicators and an E1 joint
+nonnegative two-template cone-GLR score. E1 estimates its covariance on training spectra only;
+two-fold sequence cross-fitting constructs training features. A train-whitened, orthonormal
+9-to-4 WDA projection optimizes between/within-class entropic transport dispersion. Centered
+out-of-sample dual-potential coordinates then supply the sole frame evidence channel to a
+supervised two-state filter. Benign calibration uses sequence maxima to account for repeated looks.
+
+This is not a renamed version of the original Mahalanobis-quantile regimes, nor does it train a
+representation to reproduce those regimes. The fixed-transition filter does not learn hazard
+dwell-time physics. Its episode endpoint is expected future active-frame occupancy, including
+re-entry, evaluated against simulator activity truth rather than policy-created events.
+
+Across the primary and episode populations, all prescribed CAND-minus-control AUROC intervals
+include zero. Tiny pointwise occupancy differences favor the no-switching control; one detected
+episode supplies essentially no population timing evidence. These outcomes justify pausing
+investment on this benchmark, not a theorem about channel information or method impossibility.
+See [methods, controls, and results](docs/OPERATIONAL_BENCHMARK.md).
 
 ## Case-Study Reading
 
@@ -107,6 +129,7 @@ The comparison localizes the distinction between ensemble identifiability and pe
 - The primary pipeline is simulation-first.
 - The case study is conditional on the stated forward model and nuisance prior.
 - The detection result bounds the evaluated detector family, not all possible estimators.
-- The architecture audit is scoped to the original demonstrator generator and does not alter the separate case-study measurement-limit claims.
+- Architecture comparisons use the original demonstrator generator and its explicit episode extension, not the separate calibrated case-study generator.
 - The corrected representation battery remains `INCONCLUSIVE / UNDERPOWERED`; descriptive failure patterns are not confirmatory results.
+- The later operational comparison demonstrates computational dependency, not an empirical advantage; conditional intervals omit retraining/seed uncertainty.
 - Policy outputs are decision-support records, not physical actuation.

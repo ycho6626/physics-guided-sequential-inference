@@ -4,6 +4,10 @@ This repository is a curated, standalone technical release of a larger research 
 
 ## Included
 
+- the evaluated operational WDA/OT/filter benchmark, its dependencies, frozen configurations,
+  bounded synthetic tests, and compact primary/episode aggregate results;
+- saved-prediction episode comparison arithmetic, taking an explicit local bundle path;
+
 - the complete seven-stage implementation;
 - module PRDs, schemas, CLIs, and acceptance tests;
 - deterministic experiment orchestration;
@@ -13,6 +17,9 @@ This repository is a curated, standalone technical release of a larger research 
 - technical documentation and synthetic fixtures.
 
 ## Intentionally Omitted
+
+- platform-specific job launchers, numerical-repair journals, private run bundles, and retired
+  confirmatory scaffolding (E1 detection is included, its separate registration framework is not);
 
 - licensed or locally acquired spectral datasets;
 - generated run directories and large intermediate artifacts;

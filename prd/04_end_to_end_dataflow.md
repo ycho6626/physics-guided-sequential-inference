@@ -167,6 +167,15 @@ This document specifies the **data contracts** and the intended end-to-end pipel
   - current paper-candidate artifacts are negative evidence, not a publishable positive result, until strict gates pass without unevaluable criteria
   - experiment outputs are synthetic/offline decision-support evidence only; they do not authorize autonomous execution
 
+## Separate operational benchmark
+
+The [operational architecture contract](../experiments/prd/operational_architecture.md) defines a
+second path: nine observed channels → WDA → centered transport coordinate → supervised two-state
+filter → rank-calibrated repeated-look policy. It uses separate training, calibration, and test
+sequences and does not change the canonical demonstrator above. Episode truth is evaluation
+metadata; reporting bands are not operational regime decisions. Published aggregate outcomes and
+their provenance are in [the benchmark record](../docs/OPERATIONAL_BENCHMARK.md).
+
 ## File formats (recommended)
 - Tabular: Parquet for performance and schema clarity.
 - Config: YAML with explicit schema sections.

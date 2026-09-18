@@ -7,6 +7,9 @@ This directory provides a deterministic, publication-grade evaluation harness fo
 It runs offline experiments, baselines, ablations, metrics, plots, and reproducible results bundles.
 
 ## Current scientific status
+- The separate [operational benchmark](../docs/OPERATIONAL_BENCHMARK.md) implements WDA,
+  decision-bearing OT, filtering and calibrated policy. Neither evaluated population demonstrated
+  a CAND AUROC advantage over its controls; the full implementation and bounded fixtures are included.
 - The experiments layer is deterministic, auditable, offline-safe, and designed to fail closed.
 - The calibrated case study demonstrates why apparent benchmark performance is not sufficient evidence of a physically grounded estimand.
 - Strict gates, validation-only calibration, and upstream separability audits are treated as scientific tests: a failed gate is reported as evidence, not patched into a pass.
